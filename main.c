@@ -12,17 +12,42 @@ int main(int argc, char **argv) {
   
   char **buf = readfile(filename);
 
+  int start = 1;
+  int end = END;
   while(strcmp(cmd, "q\n")) {
     fgets(cmd, 100, stdin);
-    
+   
     int i = 0;
+
     // I'll add parsing later
-    while(!isalpha(cmd[i]))
-      i++;
- 
+    while(!isalpha(cmd[i])) {
+      if(isdigit(cmd[i])){
+        for(start = 0; isdigit(cmd[i]); i++)
+          start = 10 * start + (cmd[i] - '0');
+        if(cmd[i] == ',')
+          i++;
+        if(cmd[i] == '$') {
+          end = END;
+          i++;
+        } else
+          for(end = 0; isdigit(cmd[i]); i++)
+            end = 10 * end + (cmd[i] - '0');
+      } else if(cmd[i] == ',') {
+        start = 1;
+        end = END;
+        i++;
+      }
+    }
+   
     switch(cmd[i]) {
       case 'p':
-        printbuf(buf);
+      case 'n':
+        printbuf(buf, cmd[i] == 'n', start, end);
+        break;
+      case 'a':
+      case 'i':
+      case 'c':
+        insertbuf(buf, cmd[i] == 'c', cmd[i] == 'i');
         break;
       case 'w':
         writefile(filename, buf);
@@ -34,4 +59,5 @@ int main(int argc, char **argv) {
         break;
     }
   }
+  return 0;
 }

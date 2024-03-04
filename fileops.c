@@ -36,6 +36,7 @@ void writefile(char *filename, char **buf) {
 
   for(int i = 0; buf[i]; ++i)
     tot += fprintf(fp, "%s", buf[i]);
+  
   printf("%d\n", tot);
   return;
 }
