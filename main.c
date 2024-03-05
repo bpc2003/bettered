@@ -22,23 +22,27 @@ int main(int argc, char **argv) {
     // I'll add parsing later
     while(!isalpha(cmd[i])) {
       if(isdigit(cmd[i])){
-        for(start = 0; isdigit(cmd[i]); i++)
-          start = 10 * start + (cmd[i] - '0');
-        if(cmd[i] == ',')
+        for(end = 0; isdigit(cmd[i]); i++)
+          end = 10 * end + (cmd[i] - '0');
+        if(cmd[i] == ',') {
+          start = end;
           i++;
+        } else
+          break;
         if(cmd[i] == '$') {
           end = END;
           i++;
-        } else
+        } else {
           for(end = 0; isdigit(cmd[i]); i++)
             end = 10 * end + (cmd[i] - '0');
+        }
       } else if(cmd[i] == ',') {
         start = 1;
         end = END;
         i++;
       }
     }
-   
+  
     switch(cmd[i]) {
       case 'p':
       case 'n':
@@ -47,7 +51,7 @@ int main(int argc, char **argv) {
       case 'a':
       case 'i':
       case 'c':
-        insertbuf(buf, cmd[i] == 'c', cmd[i] == 'i');
+        insertbuf(buf, end, cmd[i] == 'c', cmd[i] == 'i');
         break;
       case 'w':
         writefile(filename, buf);
