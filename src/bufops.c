@@ -60,8 +60,6 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 
 void dellines(char **buf, int start, int end)
 {
-	int i;
-
 	int len;
 	for (len = 0; buf[len]; ++len) ;
 	if (end > len) {
@@ -69,19 +67,21 @@ void dellines(char **buf, int start, int end)
 		return;
 	}
 
-	for (i = start - 1; buf[i] && i != end; ++i) ;
-
-	if (i == end && start != end) {
-		for (int j = 2 * (end - start); i >= start && j > 0; --i, --j) {
-			buf[i - 1] = strdup(buf[len - j]);
-			buf[len - j] = NULL;
+	if (end == END || end == len) {
+		for (int i = start - 1; buf[i]; ++i)
+			buf[i] = NULL;
+	} else if (start != end) {
+		int i;
+		for (int j = end, i = start - 1; i < end; ++i, ++j)
+			if (buf[j])
+				buf[i] = strdup(buf[j]);
+			else
+				buf[i] = NULL;
+	} else {
+		int i;
+		for (i = start - 1; i < len; ++i) {
+			buf[i] = buf[i + 1];
 		}
-	} else if (end == END) {
-		for (; i >= start; --i)
-			buf[i - 1] = NULL;
-	} else if (start == end) {
-		for (; buf[i]; i++)
-			buf[i - 1] = strdup(buf[i]);
-		buf[i - 1] = NULL;
+		buf[i] = NULL;
 	}
 }
