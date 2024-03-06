@@ -79,7 +79,8 @@ void dellines(char **buf, int start, int end)
 				buf[i] = NULL;
 		}
 		if(buf[j]) {
-			buf[i++] = buf[j];
+			for(; buf[j]; j++)
+				buf[i++] = buf[j];
 			buf[i] = NULL;
 		}
 	} else {
