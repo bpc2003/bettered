@@ -24,10 +24,11 @@ int main(int argc, char **argv) {
       if(isdigit(cmd[i])){
         for(end = 0; isdigit(cmd[i]); i++)
           end = 10 * end + (cmd[i] - '0');
-        if(cmd[i] == ',') {
-          start = end;
+
+        start = end;
+        if(cmd[i] == ',')
           i++;
-        } else
+        else
           break;
         if(cmd[i] == '$') {
           end = END;
@@ -52,6 +53,9 @@ int main(int argc, char **argv) {
       case 'i':
       case 'c':
         insertbuf(buf, end, cmd[i] == 'c', cmd[i] == 'i');
+        break;
+      case 'd':
+        dellines(buf, start, end);
         break;
       case 'w':
         writefile(filename, buf);
