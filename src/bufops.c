@@ -71,17 +71,21 @@ void dellines(char **buf, int start, int end)
 		for (int i = start - 1; buf[i]; ++i)
 			buf[i] = NULL;
 	} else if (start != end) {
-		int i;
-		for (int j = end, i = start - 1; i < end; ++i, ++j)
+		int i, j;
+		for (j = end, i = start - 1; i < end; ++i, ++j) {
 			if (buf[j])
 				buf[i] = strdup(buf[j]);
 			else
 				buf[i] = NULL;
+		}
+		if(buf[j]) {
+			buf[i++] = buf[j];
+			buf[i] = NULL;
+		}
 	} else {
 		int i;
-		for (i = start - 1; i < len; ++i) {
+		for (i = start - 1; i < len; ++i)
 			buf[i] = buf[i + 1];
-		}
 		buf[i] = NULL;
 	}
 }
