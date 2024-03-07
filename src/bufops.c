@@ -37,22 +37,22 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 
 	if (!ins && !ow) {
 		for (int i = len; i > pos; --i)
-			buf[i + nl - 1] = strdup(buf[i - 1]);
+			buf[i + nl - 1] = buf[i - 1];
 
 		for (int i = pos; i < pos + nl; i++)
-			buf[i] = strdup(tmpbuf[i - pos]);
+			buf[i] = tmpbuf[i - pos];
 	} else if (ins) {
 		for (int i = len; i >= pos; --i)
-			buf[i + nl - 1] = strdup(buf[i - 1]);
+			buf[i + nl - 1] = buf[i - 1];
 
 		for (int i = pos; i < pos + nl; i++)
-			buf[i - 1] = strdup(tmpbuf[i - pos]);
+			buf[i - 1] = tmpbuf[i - pos];
 	} else if (ow) {
 		for (int i = len; i != pos; --i)
-			buf[i + nl - 2] = strdup(buf[i - 1]);
+			buf[i + nl - 2] = buf[i - 1];
 
 		for (int i = pos; i < pos + nl; i++)
-			buf[i - 1] = strdup(tmpbuf[i - pos]);
+			buf[i - 1] = tmpbuf[i - pos];
 	}
 
 	free(tmpbuf);
@@ -74,12 +74,12 @@ void dellines(char **buf, int start, int end)
 		int i, j;
 		for (j = end, i = start - 1; i < end; ++i, ++j) {
 			if (buf[j])
-				buf[i] = strdup(buf[j]);
+				buf[i] = buf[j];
 			else
 				buf[i] = NULL;
 		}
-		if(buf[j]) {
-			for(; buf[j]; j++)
+		if (buf[j]) {
+			for (; buf[j]; j++)
 				buf[i++] = buf[j];
 			buf[i] = NULL;
 		}
@@ -89,4 +89,12 @@ void dellines(char **buf, int start, int end)
 			buf[i] = buf[i + 1];
 		buf[i] = NULL;
 	}
+}
+
+void undo(FILE *tmp, char **buf)
+{
+	char **t = readtmp(tmp);
+	for(int i = 0; strcmp(t[i], "\n"); ++i)
+		buf[i] = t[i];
+	free(t);
 }

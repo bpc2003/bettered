@@ -7,6 +7,7 @@ int main(int argc, char **argv)
 {
 	if (argc < 2)
 		return 1;
+	FILE *tmp = tmpfile();
 
 	char *filename = argv[1];
 	char cmd[100] = "";
@@ -52,13 +53,18 @@ int main(int argc, char **argv)
 		case 'a':
 		case 'i':
 		case 'c':
+			writetmp(tmp, buf);
 			insertbuf(buf, end, cmd[i] == 'c', cmd[i] == 'i');
 			break;
 		case 'd':
+			writetmp(tmp, buf);
 			dellines(buf, start, end);
 			break;
 		case 'w':
 			writefile(filename, buf);
+			break;
+		case 'u':
+			undo(tmp, buf);
 			break;
 		case 'q':
 			break;
