@@ -94,7 +94,10 @@ void dellines(char **buf, int start, int end)
 void undo(FILE *tmp, char **buf)
 {
 	char **t = readtmp(tmp);
-	for(int i = 0; strcmp(t[i], "\n"); ++i)
+	int i;
+	for(i = 0; strcmp(t[i], "\n"); ++i)
 		buf[i] = t[i];
+	for(; buf[i]; ++i)
+		buf[i] = NULL;
 	free(t);
 }
