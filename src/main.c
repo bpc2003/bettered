@@ -12,6 +12,7 @@ int main(int argc, char **argv)
 
 	char *filename = argv[1];
 	char cmdstr[100] = "";
+	char *shcmd = (char *)calloc(99, sizeof(char));
 
 	char **buf = readfile(filename);
 	if (buf == NULL)
@@ -55,12 +56,18 @@ int main(int argc, char **argv)
 		cmd = cmdstr[i];
 		if (!isalpha(cmd) && cmd != '!')
 			continue;
-		if (cmdstr[i + 1])
+		if (cmdstr[i + 1]) {
+			char *tmp = shcmd;
 			while (cmdstr[i]) {
 				if (isdigit(cmdstr[i]))
 					dst = 10 * dst + (cmdstr[i] - '0');
+				else if(cmdstr[0] == '!') {
+					if(i < 98 && cmdstr[i])
+						*tmp++ = cmdstr[i+1];
+				}
 				++i;
 			}
+		}
 
 		switch (cmd) {
 		case 'p':
@@ -93,6 +100,9 @@ int main(int argc, char **argv)
 			break;
 		case 'u':
 			undo(tmp, buf);
+			break;
+		case '!':
+			system(shcmd);
 			break;
 		case 'q':
 			break;
