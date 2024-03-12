@@ -26,11 +26,10 @@ int main(int argc, char **argv)
 		int dst = 0;
 		int i = 0;
 
-		while (!isalpha(cmdstr[i])) {
+		while (!isalpha(cmdstr[i]) && cmdstr[i] != '!') {
 			if (isdigit(cmdstr[i])) {
 				for (end = 0; isdigit(cmdstr[i]); i++)
 					end = 10 * end + (cmdstr[i] - '0');
-
 				start = end;
 				if (cmdstr[i] == ',')
 					i++;
@@ -49,9 +48,13 @@ int main(int argc, char **argv)
 				start = 1;
 				end = END;
 				i++;
+			} else {
+				break;
 			}
 		}
 		cmd = cmdstr[i];
+		if (!isalpha(cmd) && cmd != '!')
+			continue;
 		if (cmdstr[i + 1])
 			while (cmdstr[i]) {
 				if (isdigit(cmdstr[i]))
@@ -65,10 +68,16 @@ int main(int argc, char **argv)
 			printbuf(buf, cmd == 'n', start, end);
 			break;
 		case 'a':
+			writetmp(tmp, buf);
+			insertbuf(buf, end, 0, 0);
+			break;
 		case 'i':
+			writetmp(tmp, buf);
+			insertbuf(buf, start, 0, 1);
+			break;
 		case 'c':
 			writetmp(tmp, buf);
-			insertbuf(buf, end, cmd == 'c', cmd == 'i');
+			insertbuf(buf, start, (end - start + 1), 0);
 			break;
 		case 'd':
 			writetmp(tmp, buf);

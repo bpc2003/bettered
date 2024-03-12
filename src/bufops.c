@@ -24,7 +24,6 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 		perror("Err");
 		return;
 	}
-
 	int nl = 0;
 
 	while (1) {
@@ -39,6 +38,9 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 
 	int len = 0;
 	for (; buf[len]; len++) ;
+	if (len + nl >= BUFSIZ)
+		buf = realloc(buf, sizeof(char *) * (len + nl));
+
 	if (pos == END || pos > len)
 		pos = len;
 
@@ -55,11 +57,18 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 		for (int i = pos; i < pos + nl; i++)
 			buf[i - 1] = tmpbuf[i - pos];
 	} else if (ow) {
-		for (int i = len; i != pos; --i)
-			buf[i + nl - 2] = buf[i - 1];
+		int tmp, postmp;
+		for (tmp = pos - 1; tmp < pos + ow - 1 && (postmp = tmp - pos + 1) < nl; ++tmp)
+			buf[tmp] = strdup(tmpbuf[postmp]);
 
-		for (int i = pos; i < pos + nl; i++)
-			buf[i - 1] = tmpbuf[i - pos];
+		if (postmp < nl) {
+			nl -= ow;
+			pos += ow;
+			for (int i = len; i >= tmp; --i)
+				buf[i + nl - 1] = buf[i - 1];
+			for (int i = pos; i < pos + nl; i++)
+				buf[i - 1] = tmpbuf[++postmp];
+		}
 	}
 
 	free(tmpbuf);
@@ -129,6 +138,7 @@ void undo(FILE *tmp, char **buf)
 		for (; buf[i]; ++i)
 			buf[i] = NULL;
 	}
+
 	for (i = 0; tmpbuf[i]; ++i)
 		free(tmpbuf[i]);
 	free(tmpbuf);
