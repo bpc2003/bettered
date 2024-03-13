@@ -13,3 +13,6 @@ void insertbuf(char **buf, int pos, int ow, int ins);
 void dellines(char **buf, int start, int end);
 void movelines(char **buf, int start, int end, int to, int y);
 void undo(FILE * tmp, char **buf);
+
+// regex
+int *find(char **buf, char *pat, int *len);

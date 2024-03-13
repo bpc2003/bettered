@@ -4,17 +4,27 @@
 #include <stdlib.h>
 #include "bled.h"
 
+FILE *tmp;
+char *shcmd;
+char *filename;
+char **buf;
+
+void command(char, int, int, int);
+
 int main(int argc, char **argv)
 {
 	if (argc < 2)
 		return 1;
-	FILE *tmp = tmpfile();
-
-	char *filename = argv[1];
+	filename = argv[1];
+	tmp = tmpfile();
+	
+	shcmd = (char *)calloc(99, sizeof(char));
 	char cmdstr[100] = "";
-	char *shcmd = (char *)calloc(99, sizeof(char));
+	
+	char *pat = (char*)calloc(97, sizeof(char));
+	int *lines, lineslen = 0;
 
-	char **buf = readfile(filename);
+	buf = readfile(filename);
 	if (buf == NULL)
 		return 1;
 
@@ -53,23 +63,63 @@ int main(int argc, char **argv)
 				break;
 			}
 		}
+
 		cmd = cmdstr[i];
 		if (!isalpha(cmd) && cmd != '!')
 			continue;
+		char *str;
+		if (cmdstr[0] == '!')
+			str = shcmd;
+		else if (cmdstr[1] == '/')
+			str = pat; 
 		if (cmdstr[i + 1]) {
-			char *tmp = shcmd;
 			while (cmdstr[i]) {
 				if (isdigit(cmdstr[i]))
 					dst = 10 * dst + (cmdstr[i] - '0');
-				else if(cmdstr[0] == '!') {
-					if(i < 98 && cmdstr[i])
-						*tmp++ = cmdstr[i+1];
+				else if (cmdstr[0] == '!') {
+					if (i < 98 && cmdstr[i])
+						*str++ = cmdstr[i+1];
+				} else if (cmdstr[i] == '/') {
+					while(cmdstr[++i] != '/')
+						*str++ = cmdstr[i];
 				}
 				++i;
 			}
 		}
 
-		switch (cmd) {
+		if (cmd == 'g') {
+			lines = find(buf, pat, &lineslen);
+			cmd = cmdstr[i - 2];
+			if(lineslen == 0)
+				continue;
+		}
+		
+		if (lineslen > 0) {
+			int *it = lines;
+			while (lineslen > 0) {
+				command(cmd, *it, *it, dst);
+				*it++;
+				lineslen--;
+			}
+			free(lines);
+			continue;
+		}
+
+		command(cmd, start, end, dst);	
+	}
+
+	fclose(tmp);
+	for (int i = 0; buf[i]; ++i)
+		free(buf[i]);
+	free(buf);
+	free(pat);
+	free(shcmd);
+	return 0;
+}
+
+void command(char cmd, int start, int end, int dst)
+{
+	switch (cmd) {
 		case 'p':
 		case 'n':
 			printbuf(buf, cmd == 'n', start, end);
@@ -110,11 +160,4 @@ int main(int argc, char **argv)
 			fprintf(stderr, "?\n");
 			break;
 		}
-	}
-
-	fclose(tmp);
-	for (int i = 0; buf[i]; ++i)
-		free(buf[i]);
-	free(buf);
-	return 0;
 }
