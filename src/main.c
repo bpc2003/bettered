@@ -8,6 +8,8 @@ FILE *tmp;
 char *shcmd;
 char *filename;
 char **buf;
+char *pat;
+char *rep;
 
 void command(char, int, int, int);
 
@@ -19,9 +21,10 @@ int main(int argc, char **argv)
 	tmp = tmpfile();
 	
 	shcmd = (char *)calloc(99, sizeof(char));
-	char cmdstr[100] = "";
+	char cmdstr[200] = "";
 	
-	char *pat = (char*)calloc(97, sizeof(char));
+	pat = (char *)calloc(97, sizeof(char));
+	rep = (char *)calloc(97, sizeof(char));
 	int *lines, lineslen = 0;
 
 	buf = readfile(filename);
@@ -31,7 +34,7 @@ int main(int argc, char **argv)
 	int start = 1;
 	int end = END;
 	while (strcmp(cmdstr, "q\n")) {
-		fgets(cmdstr, 100, stdin);
+		fgets(cmdstr, 200, stdin);
 		char cmd;
 
 		int dst = 0;
@@ -70,7 +73,7 @@ int main(int argc, char **argv)
 		char *str;
 		if (cmdstr[0] == '!')
 			str = shcmd;
-		else if (cmdstr[1] == '/')
+		else if (cmdstr[1] == '/' || cmdstr[1] == '?' || cmdstr[1] == '\\')
 			str = pat; 
 		if (cmdstr[i + 1]) {
 			while (cmdstr[i]) {
@@ -79,9 +82,15 @@ int main(int argc, char **argv)
 				else if (cmdstr[0] == '!') {
 					if (i < 98 && cmdstr[i])
 						*str++ = cmdstr[i+1];
-				} else if (cmdstr[i] == '/') {
-					while(cmdstr[++i] != '/')
+				} else if (cmdstr[i] == '/' || cmdstr[i] == '\\' || cmdstr[i] == '?') {
+					char t = cmdstr[i];
+					if (i > 1) {
+						t = '\n';
+						str = rep;
+					}
+					while(cmdstr[++i] != t)
 						*str++ = cmdstr[i];
+					continue;
 				}
 				++i;
 			}
@@ -144,6 +153,9 @@ void command(char cmd, int start, int end, int dst)
 		case 't':
 			writetmp(tmp, buf);
 			movelines(buf, start, end, dst, cmd == 't');
+			break;
+		case 's':
+			substitute(buf, start, end, pat, rep);
 			break;
 		case 'w':
 			writefile(filename, buf);

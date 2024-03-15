@@ -55,7 +55,7 @@ char **readtmp(FILE *tmp)
 
 	char *str = NULL;
 	size_t size = 0;
-	for (int i = 0; getline(&str, &size, tmp) > 0 && strcmp(str, "\n"); ++i) {
+	for (int i = 0; getline(&str, &size, tmp) > 0 && strcmp(str, ".\n"); ++i) {
 		buf[i] = strdup(str);
 		if (i > BUFSIZ)
 			buf =
@@ -73,5 +73,5 @@ void writetmp(FILE *tmp, char **buf)
 		tot += fprintf(tmp, "%s", buf[i]);
 
 	fseek(tmp, tot, SEEK_SET);
-	fputs("\n", tmp);
+	fputs(".\n", tmp);
 }

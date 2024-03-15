@@ -16,3 +16,4 @@ void undo(FILE * tmp, char **buf);
 
 // regex
 int *find(char **buf, char *pat, int *len);
+void substitute(char **buf, int start, int end, char *pat, char *rep);
