@@ -15,16 +15,16 @@ void command(char, int, int, int);
 
 int main(int argc, char **argv)
 {
-	if (argc < 2)
-		return 1;
-	filename = argv[1];
+	if(argc > 2)
+		filename = argv[1];
 	tmp = tmpfile();
 	
 	shcmd = (char *)calloc(99, sizeof(char));
-	char cmdstr[200] = "";
+	char *cmdstr = NULL;
+	size_t size = 0;
 	
-	pat = (char *)calloc(97, sizeof(char));
-	rep = (char *)calloc(97, sizeof(char));
+	pat = (char *)calloc(100, sizeof(char));
+	rep = (char *)calloc(100, sizeof(char));
 	int *lines, lineslen = 0;
 
 	buf = readfile(filename);
@@ -33,8 +33,8 @@ int main(int argc, char **argv)
 
 	int start = 1;
 	int end = END;
-	while (strcmp(cmdstr, "q\n")) {
-		fgets(cmdstr, 200, stdin);
+	do {
+		getline(&cmdstr, &size, stdin);
 		char cmd;
 
 		int dst = 0;
@@ -91,6 +91,9 @@ int main(int argc, char **argv)
 					while(cmdstr[++i] != t)
 						*str++ = cmdstr[i];
 					continue;
+				} else if (cmdstr[i] == ' ') {
+					cmdstr[strlen(cmdstr) - 1] = '\0';
+					filename = strdup(cmdstr + i + 1);
 				}
 				++i;
 			}
@@ -101,6 +104,12 @@ int main(int argc, char **argv)
 			cmd = cmdstr[i - 2];
 			if(lineslen == 0)
 				continue;
+		} else if (cmd == 'e') {
+			for (int i = 0; buf[i]; ++i)
+				free(buf[i]);
+			free(buf);
+			buf = readfile(filename);
+			continue;
 		}
 		
 		if (lineslen > 0) {
@@ -115,14 +124,16 @@ int main(int argc, char **argv)
 		}
 
 		command(cmd, start, end, dst);	
-	}
+	} while(strcmp(cmdstr, "q\n"));
 
 	fclose(tmp);
 	for (int i = 0; buf[i]; ++i)
 		free(buf[i]);
 	free(buf);
 	free(pat);
+	free(rep);
 	free(shcmd);
+	free(cmdstr);
 	return 0;
 }
 
@@ -155,6 +166,7 @@ void command(char cmd, int start, int end, int dst)
 			movelines(buf, start, end, dst, cmd == 't');
 			break;
 		case 's':
+			writetmp(tmp, buf);
 			substitute(buf, start, end, pat, rep);
 			break;
 		case 'w':

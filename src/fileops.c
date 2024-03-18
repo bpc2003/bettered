@@ -8,6 +8,9 @@ char **readfile(char *filename)
 	FILE *fp = fopen(filename, "r");
 	char **buf = (char **)calloc(BUFSIZ, sizeof(char *));
 
+	if (filename == NULL)
+		return buf;
+
 	if (fp == NULL) {
 		perror(filename);
 		return buf;
@@ -32,6 +35,10 @@ char **readfile(char *filename)
 
 void writefile(char *filename, char **buf)
 {
+	if (filename == NULL) {
+		fprintf(stderr, "?\n");
+		return;
+	}
 	FILE *fp = fopen(filename, "w");
 	ssize_t tot = 0;
 

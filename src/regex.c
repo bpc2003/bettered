@@ -53,8 +53,14 @@ void substitute(char **buf, int start, int end, char *pat, char *rep)
     if (val == 0) {
       int p = 0;
       int j;
-      for (j = pmatch[0].rm_so; j < pmatch[0].rm_eo; ++j)
-        buf[i][j] = rep[p++];
+      for (j = pmatch[0].rm_so; j < pmatch[0].rm_eo; ++j) { 
+        if(rep[p])
+          buf[i][j] = rep[p++];
+        else {
+          for(; buf[i][j]; ++j)
+            buf[i][j] = buf[i][j+1];
+        }
+      }
       if(rep[p]) {
         buf[i] = (char *)realloc(buf[i], strlen(buf[i])+(strlen(rep)-(p+1)));
         for (int k = strlen(buf[i]); k >= p+1; --k)
