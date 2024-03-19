@@ -19,7 +19,7 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 {
 	char *tmp = NULL;
 	size_t size = 0;
-	char **tmpbuf = (char **)malloc(sizeof(char *));
+	char **tmpbuf = (char **)calloc(BUFSIZ, sizeof(char *));
 	if (tmpbuf == NULL) {
 		perror("Err");
 		return;
@@ -30,8 +30,10 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 		getline(&tmp, &size, stdin);
 		if (!strcmp(tmp, ".\n"))
 			break;
-		tmpbuf =
-		    (char **)realloc(tmpbuf, sizeof(char *) * sizeof(tmpbuf));
+		if (nl > BUFSIZ)
+			tmpbuf =
+			    (char **)realloc(tmpbuf,
+					     sizeof(char *) * sizeof(tmpbuf));
 		tmpbuf[nl++] = strdup(tmp);
 	}
 	free(tmp);
@@ -49,16 +51,17 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 			buf[i + nl - 1] = buf[i - 1];
 
 		for (int i = pos; i < pos + nl; i++)
-			buf[i] = tmpbuf[i - pos];
+			buf[i] = strdup(tmpbuf[i - pos]);
 	} else if (ins) {
 		for (int i = len; i >= pos; --i)
 			buf[i + nl - 1] = buf[i - 1];
 
 		for (int i = pos; i < pos + nl; i++)
-			buf[i - 1] = tmpbuf[i - pos];
+			buf[i - 1] = strdup(tmpbuf[i - pos]);
 	} else if (ow) {
 		int tmp, postmp;
-		for (tmp = pos - 1; tmp < pos + ow - 1 && (postmp = tmp - pos + 1) < nl; ++tmp)
+		for (tmp = pos - 1;
+		     tmp < pos + ow - 1 && (postmp = tmp - pos + 1) < nl; ++tmp)
 			buf[tmp] = strdup(tmpbuf[postmp]);
 
 		if (postmp < nl) {
@@ -67,10 +70,12 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 			for (int i = len; i >= tmp; --i)
 				buf[i + nl - 1] = buf[i - 1];
 			for (int i = pos; i < pos + nl; i++)
-				buf[i - 1] = tmpbuf[++postmp];
+				buf[i - 1] = strdup(tmpbuf[++postmp]);
 		}
 	}
 
+	for (int i = 0; tmpbuf[i]; ++i)
+		free(tmpbuf[i]);
 	free(tmpbuf);
 }
 
@@ -128,18 +133,13 @@ void movelines(char **buf, int start, int end, int to, int y)
 	free(tmpbuf);
 }
 
-void undo(FILE *tmp, char **buf)
+void undo(FILE *tmp, char ***buf)
 {
-	char **tmpbuf = readtmp(tmp);
-	int i;
-	for (i = 0; tmpbuf[i]; ++i)
-		buf[i] = strdup(tmpbuf[i]);
-	if (buf[i]) {
-		for (; buf[i]; ++i)
-			buf[i] = NULL;
-	}
+	int len;
+	for (len = 0; buf[len]; ++len) ;
 
-	for (i = 0; tmpbuf[i]; ++i)
-		free(tmpbuf[i]);
-	free(tmpbuf);
+	for (int i = 0; i < len; ++i)
+		free(*buf[i]);
+	free(*buf);
+	*buf = readtmp(tmp);
 }

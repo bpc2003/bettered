@@ -15,14 +15,14 @@ void command(char, int, int, int);
 
 int main(int argc, char **argv)
 {
-	if(argc > 2)
+	if (argc >= 2)
 		filename = argv[1];
 	tmp = tmpfile();
-	
+
 	shcmd = (char *)calloc(99, sizeof(char));
 	char *cmdstr = NULL;
 	size_t size = 0;
-	
+
 	pat = (char *)calloc(100, sizeof(char));
 	rep = (char *)calloc(100, sizeof(char));
 	int *lines, lineslen = 0;
@@ -73,22 +73,27 @@ int main(int argc, char **argv)
 		char *str;
 		if (cmdstr[0] == '!')
 			str = shcmd;
-		else if (cmdstr[1] == '/' || cmdstr[1] == '?' || cmdstr[1] == '\\')
-			str = pat; 
+		else if (cmdstr[1] == '/' || cmdstr[1] == '?'
+			 || cmdstr[1] == '\\')
+			str = pat;
 		if (cmdstr[i + 1]) {
 			while (cmdstr[i]) {
 				if (isdigit(cmdstr[i]))
 					dst = 10 * dst + (cmdstr[i] - '0');
 				else if (cmdstr[0] == '!') {
 					if (i < 98 && cmdstr[i])
-						*str++ = cmdstr[i+1];
-				} else if (cmdstr[i] == '/' || cmdstr[i] == '\\' || cmdstr[i] == '?') {
+						*str++ = cmdstr[i + 1];
+				} else
+				    if ((cmdstr[i] == '/' || cmdstr[i] == '?'
+					 || cmdstr[i] == '\\') && (cmd == 'g'
+								   || cmd ==
+								   's')) {
 					char t = cmdstr[i];
 					if (i > 1) {
 						t = '\n';
 						str = rep;
 					}
-					while(cmdstr[++i] != t)
+					while (cmdstr[++i] != t)
 						*str++ = cmdstr[i];
 					continue;
 				} else if (cmdstr[i] == ' ') {
@@ -102,7 +107,7 @@ int main(int argc, char **argv)
 		if (cmd == 'g') {
 			lines = find(buf, pat, &lineslen);
 			cmd = cmdstr[i - 2];
-			if(lineslen == 0)
+			if (lineslen == 0)
 				continue;
 		} else if (cmd == 'e') {
 			for (int i = 0; buf[i]; ++i)
@@ -111,7 +116,7 @@ int main(int argc, char **argv)
 			buf = readfile(filename);
 			continue;
 		}
-		
+
 		if (lineslen > 0) {
 			int *it = lines;
 			while (lineslen > 0) {
@@ -123,8 +128,8 @@ int main(int argc, char **argv)
 			continue;
 		}
 
-		command(cmd, start, end, dst);	
-	} while(strcmp(cmdstr, "q\n"));
+		command(cmd, start, end, dst);
+	} while (strcmp(cmdstr, "q\n"));
 
 	fclose(tmp);
 	for (int i = 0; buf[i]; ++i)
@@ -134,54 +139,58 @@ int main(int argc, char **argv)
 	free(rep);
 	free(shcmd);
 	free(cmdstr);
-	return 0;
+	if (argc < 2)
+		free(filename);
+	exit(0);
 }
 
 void command(char cmd, int start, int end, int dst)
 {
 	switch (cmd) {
-		case 'p':
-		case 'n':
-			printbuf(buf, cmd == 'n', start, end);
-			break;
-		case 'a':
-			writetmp(tmp, buf);
-			insertbuf(buf, end, 0, 0);
-			break;
-		case 'i':
-			writetmp(tmp, buf);
-			insertbuf(buf, start, 0, 1);
-			break;
-		case 'c':
-			writetmp(tmp, buf);
-			insertbuf(buf, start, (end - start + 1), 0);
-			break;
-		case 'd':
-			writetmp(tmp, buf);
-			dellines(buf, start, end);
-			break;
-		case 'm':
-		case 't':
-			writetmp(tmp, buf);
-			movelines(buf, start, end, dst, cmd == 't');
-			break;
-		case 's':
-			writetmp(tmp, buf);
-			substitute(buf, start, end, pat, rep);
-			break;
-		case 'w':
-			writefile(filename, buf);
-			break;
-		case 'u':
-			undo(tmp, buf);
-			break;
-		case '!':
-			system(shcmd);
-			break;
-		case 'q':
-			break;
-		default:
-			fprintf(stderr, "?\n");
-			break;
-		}
+	case 'p':
+	case 'n':
+		printbuf(buf, cmd == 'n', start, end);
+		break;
+	case 'a':
+		writetmp(tmp, buf);
+		insertbuf(buf, end, 0, 0);
+		break;
+	case 'i':
+		writetmp(tmp, buf);
+		insertbuf(buf, start, 0, 1);
+		break;
+	case 'c':
+		if (end == END)
+			for (end = 0; buf[end]; ++end) ;
+		writetmp(tmp, buf);
+		insertbuf(buf, start, (end - start + 1), 0);
+		break;
+	case 'd':
+		writetmp(tmp, buf);
+		dellines(buf, start, end);
+		break;
+	case 'm':
+	case 't':
+		writetmp(tmp, buf);
+		movelines(buf, start, end, dst, cmd == 't');
+		break;
+	case 's':
+		writetmp(tmp, buf);
+		substitute(buf, start, end, pat, rep);
+		break;
+	case 'w':
+		writefile(filename, buf);
+		break;
+	case 'u':
+		undo(tmp, &buf);
+		break;
+	case '!':
+		system(shcmd);
+		break;
+	case 'q':
+		break;
+	default:
+		fprintf(stderr, "?\n");
+		break;
+	}
 }
