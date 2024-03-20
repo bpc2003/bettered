@@ -188,6 +188,7 @@ void command(char cmd, int start, int end, int dst)
 		system(shcmd);
 		break;
 	case 'q':
+	case 'Q':
 		break;
 	default:
 		fprintf(stderr, "?\n");
