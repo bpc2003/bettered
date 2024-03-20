@@ -87,30 +87,31 @@ void dellines(char **buf, int start, int end)
 		end = len;
 
 	if (end == len) {
-		for (int i = start - 1; buf[i]; ++i)
-			buf[i] = NULL;
-	} else {
-		int i, j;
-		for (j = end, i = start - 1; i < end; ++i, ++j) {
-			if (buf[j])
-				buf[i] = buf[j];
-			else
-				buf[i] = NULL;
+		for (int i = end; i >= start; --i) {
+			buf[i - 1] = buf[i];
 		}
-		if (buf[j]) {
-			for (; buf[j]; j++)
-				buf[i++] = buf[j];
-		}
-		buf[i] = NULL;
-	}
+	} // else {
+	// 	int i, j;
+	// 	for (j = end, i = start - 1; i < end; ++i, ++j) {
+	// 		if (buf[j])
+	// 			buf[i] = buf[j];
+	// 		else
+	// 			buf[i] = NULL;
+	// 	}
+	// 	if (buf[j]) {
+	// 		for (; buf[j]; j++)
+	// 			buf[i++] = buf[j];
+	// 	}
+	// 	buf[i] = NULL;
+	// }
 }
 
 void movelines(char **buf, int start, int end, int to, int y)
 {
-	if (to == end) {
-		fprintf(stderr, "?\n");
-		return;
-	}
+	// if (to == end) {
+	// 	fprintf(stderr, "?\n");
+	// 	return;
+	// }
 
 	char **tmpbuf = (char **)malloc((end - start + 1) * sizeof(char *));
 	for (int i = start - 1; i < end; ++i)
@@ -135,11 +136,8 @@ void movelines(char **buf, int start, int end, int to, int y)
 
 void undo(FILE *tmp, char ***buf)
 {
-	int len;
-	for (len = 0; buf[len]; ++len) ;
-
-	for (int i = 0; i < len; ++i)
-		free(*buf[i]);
-	free(*buf);
-	*buf = readtmp(tmp);
+	for (int i = 0; buf[0][i]; ++i)
+		free(buf[0][i]);	
+	free(buf[0]);
+	buf[0] = readtmp(tmp);
 }
