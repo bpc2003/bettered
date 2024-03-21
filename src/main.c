@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 		}
 
 		command(cmd, start, end, dst);
-	} while (strcmp(cmdstr, "q\n"));
+	} while (strcmp(cmdstr, "q\n") && strcmp(cmdstr, "Q\n"));
 
 	fclose(tmp);
 	for (int i = 0; buf[i]; ++i)

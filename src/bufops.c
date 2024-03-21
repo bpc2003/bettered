@@ -81,9 +81,9 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 
 void dellines(char **buf, int start, int end)
 {
-	int len;
-	
+	int len;	
 	for (len = 0; buf[len]; ++len) ;
+
 	if (end == END || end > len)
 		end = len;
 	char **tmpbuf = (char **)calloc((len-end+1), sizeof(char *));
@@ -124,7 +124,7 @@ void movelines(char **buf, int start, int end, int to, int y)
 	for (len = 0; buf[len]; ++len) ;
 
 	for (int i = len; i >= to; --i)
-		buf[(end - start + 1) + i - 1] = strdup(buf[i - 1]);
+		buf[(end - start + 1) + i - 1] = buf[i - 1];
 	for (int i = 0; i < (end - start + 1); ++i)
 		buf[to + i] = strdup(tmpbuf[i]);
 
