@@ -82,37 +82,36 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 void dellines(char **buf, int start, int end)
 {
 	int len;
+	
 	for (len = 0; buf[len]; ++len) ;
 	if (end == END || end > len)
 		end = len;
+	char **tmpbuf = (char **)calloc((len-end+1), sizeof(char *));
 
 	if (end == len) {
 		for (int i = end; i >= start; --i) {
-			buf[i - 1] = buf[i];
+			free(buf[i - 1]);
+			buf[i - 1] = NULL;
 		}
 	} else {
-		int i, j;
-		for (j = end, i = start - 1; i < end; ++i, ++j) {
-			if (buf[j])
-				buf[i] = buf[j];
+		for (int i = end; buf[i]; ++i)
+			tmpbuf[i - end] = strdup(buf[i]);
+		
+		for (int i = start - 1, j = 0; i < len; ++i, ++j) {
+			free(buf[i]);
+			if (j < (len - end)) 
+				buf[i] = strdup(tmpbuf[j]);
 			else
 				buf[i] = NULL;
 		}
-		if (buf[j]) {
-			for (; buf[j]; j++)
-				buf[i++] = buf[j];
-		}
-		buf[i] = NULL;
 	}
+	for (int i = 0; tmpbuf[i]; ++i)
+		free(tmpbuf[i]);
+	free(tmpbuf);
 }
 
 void movelines(char **buf, int start, int end, int to, int y)
 {
-	// if (to == end) {
-	// 	fprintf(stderr, "?\n");
-	// 	return;
-	// }
-
 	char **tmpbuf = (char **)malloc((end - start + 1) * sizeof(char *));
 	for (int i = start - 1; i < end; ++i)
 		tmpbuf[i - (start - 1)] = strdup(buf[i]);
