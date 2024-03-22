@@ -16,7 +16,7 @@ void command(char, int, int, int);
 int main(int argc, char **argv)
 {
 	if (argc >= 2)
-		filename = argv[1];
+		filename = strdup(argv[1]);
 	tmp = tmpfile();
 
 	shcmd = (char *)calloc(99, sizeof(char));
@@ -139,8 +139,7 @@ int main(int argc, char **argv)
 	free(rep);
 	free(shcmd);
 	free(cmdstr);
-	if (argc < 2)
-		free(filename);
+	free(filename);
 	exit(0);
 }
 
@@ -149,21 +148,21 @@ void command(char cmd, int start, int end, int dst)
 	switch (cmd) {
 	case 'p':
 	case 'n':
-		printbuf(buf, cmd == 'n', start, end);
+		printlines(buf, cmd == 'n', start, end);
 		break;
 	case 'a':
 		writetmp(tmp, buf);
-		insertbuf(buf, end, 0, 0);
+		insertlines(buf, end, 0, 0);
 		break;
 	case 'i':
 		writetmp(tmp, buf);
-		insertbuf(buf, start, 0, 1);
+		insertlines(buf, start, 0, 1);
 		break;
 	case 'c':
 		if (end == END)
 			for (end = 0; buf[end]; ++end) ;
 		writetmp(tmp, buf);
-		insertbuf(buf, start, (end - start + 1), 0);
+		insertlines(buf, start, (end - start + 1), 0);
 		break;
 	case 'd':
 		writetmp(tmp, buf);

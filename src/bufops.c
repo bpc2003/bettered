@@ -3,7 +3,7 @@
 #include <string.h>
 #include "bled.h"
 
-void printbuf(char **buf, int sl, int start, int end)
+void printlines(char **buf, int sl, int start, int end)
 {
 	for (int i = start - 1; buf[i]; ++i) {
 		if (i == end)
@@ -15,7 +15,7 @@ void printbuf(char **buf, int sl, int start, int end)
 	}
 }
 
-void insertbuf(char **buf, int pos, int ow, int ins)
+void insertlines(char **buf, int pos, int ow, int ins)
 {
 	char *tmp = NULL;
 	size_t size = 0;
@@ -61,8 +61,10 @@ void insertbuf(char **buf, int pos, int ow, int ins)
 	} else if (ow) {
 		int tmp, postmp;
 		for (tmp = pos - 1;
-		     tmp < pos + ow - 1 && (postmp = tmp - pos + 1) < nl; ++tmp)
+		     tmp < pos + ow - 1 && (postmp = tmp - pos + 1) < nl; ++tmp) {
+			free(buf[tmp]);
 			buf[tmp] = strdup(tmpbuf[postmp]);
+		}
 
 		if (postmp < nl) {
 			nl -= ow;
