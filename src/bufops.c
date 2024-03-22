@@ -90,23 +90,15 @@ void dellines(char **buf, int start, int end)
 	if (end == END || end > len)
 		end = len;
 	char **tmpbuf = (char **)calloc((len - end + 1), sizeof(char *));
+	for (int i = end; buf[i]; ++i)
+		tmpbuf[i - end] = strdup(buf[i]);
 
-	if (end == len) {
-		for (int i = end; i >= start; --i) {
-			free(buf[i - 1]);
-			buf[i - 1] = NULL;
-		}
-	} else {
-		for (int i = end; buf[i]; ++i)
-			tmpbuf[i - end] = strdup(buf[i]);
-
-		for (int i = start - 1, j = 0; i < len; ++i, ++j) {
-			free(buf[i]);
-			if (j < (len - end))
-				buf[i] = strdup(tmpbuf[j]);
-			else
-				buf[i] = NULL;
-		}
+	for (int i = start - 1, j = 0; i < len; ++i, ++j) {
+		free(buf[i]);
+		if (j < (len - end))
+			buf[i] = strdup(tmpbuf[j]);
+		else
+			buf[i] = NULL;
 	}
 	for (int i = 0; tmpbuf[i]; ++i)
 		free(tmpbuf[i]);
