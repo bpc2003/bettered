@@ -61,7 +61,8 @@ void insertlines(char **buf, int pos, int ow, int ins)
 	} else if (ow) {
 		int tmp, postmp;
 		for (tmp = pos - 1;
-		     tmp < pos + ow - 1 && (postmp = tmp - pos + 1) < nl; ++tmp) {
+		     tmp < pos + ow - 1 && (postmp = tmp - pos + 1) < nl;
+		     ++tmp) {
 			free(buf[tmp]);
 			buf[tmp] = strdup(tmpbuf[postmp]);
 		}
@@ -83,12 +84,12 @@ void insertlines(char **buf, int pos, int ow, int ins)
 
 void dellines(char **buf, int start, int end)
 {
-	int len;	
+	int len;
 	for (len = 0; buf[len]; ++len) ;
 
 	if (end == END || end > len)
 		end = len;
-	char **tmpbuf = (char **)calloc((len-end+1), sizeof(char *));
+	char **tmpbuf = (char **)calloc((len - end + 1), sizeof(char *));
 
 	if (end == len) {
 		for (int i = end; i >= start; --i) {
@@ -98,10 +99,10 @@ void dellines(char **buf, int start, int end)
 	} else {
 		for (int i = end; buf[i]; ++i)
 			tmpbuf[i - end] = strdup(buf[i]);
-		
+
 		for (int i = start - 1, j = 0; i < len; ++i, ++j) {
 			free(buf[i]);
-			if (j < (len - end)) 
+			if (j < (len - end))
 				buf[i] = strdup(tmpbuf[j]);
 			else
 				buf[i] = NULL;
@@ -138,7 +139,7 @@ void movelines(char **buf, int start, int end, int to, int y)
 void undo(FILE *tmp, char ***buf)
 {
 	for (int i = 0; buf[0][i]; ++i)
-		free(buf[0][i]);	
+		free(buf[0][i]);
 	free(buf[0]);
 	buf[0] = readtmp(tmp);
 }

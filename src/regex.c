@@ -57,11 +57,16 @@ void substitute(char **buf, int start, int end, char *pat, char *rep)
 				if (rep[p])
 					buf[i][j] = rep[p++];
 				else {
-					char *tmp = strdup(buf[i] + pmatch[0].rm_eo);
-					if(pmatch[0].rm_eo - 1 == p)
-						strcpy(buf[i] + (pmatch[0].rm_eo - 1), tmp);
+					char *tmp =
+					    strdup(buf[i] + pmatch[0].rm_eo);
+					if (pmatch[0].rm_eo - 1 == p)
+						strcpy(buf[i] +
+						       (pmatch[0].rm_eo - 1),
+						       tmp);
 					else
-						strcpy(buf[i] + (pmatch[0].rm_eo - p - 1), tmp);
+						strcpy(buf[i] +
+						       (pmatch[0].rm_eo - p -
+							1), tmp);
 					free(tmp);
 					break;
 				}
@@ -70,7 +75,7 @@ void substitute(char **buf, int start, int end, char *pat, char *rep)
 				buf[i] =
 				    (char *)realloc(buf[i],
 						    strlen(buf[i]) +
-						    (strlen(rep) - (p + 1)));	
+						    (strlen(rep) - (p + 1)));
 				for (int k = strlen(buf[i]); k >= p + 1; --k)
 					buf[i][k + (strlen(rep) - (p + 1))] =
 					    buf[i][k - 1];
