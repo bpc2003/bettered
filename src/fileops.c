@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bled.h"
+#include "bed.h"
 
 char **readfile(char *filename)
 {

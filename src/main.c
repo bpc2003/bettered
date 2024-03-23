@@ -2,7 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include "bled.h"
+#include "bed.h"
 
 FILE *tmp;
 char *shcmd;
@@ -152,17 +152,15 @@ void command(char cmd, int start, int end, int dst)
 		break;
 	case 'a':
 		writetmp(tmp, buf);
-		insertlines(buf, end, 0, 0);
+		insertlines(buf, end, 0);
 		break;
 	case 'i':
 		writetmp(tmp, buf);
-		insertlines(buf, start, 0, 1);
+		insertlines(buf, start, 1);
 		break;
 	case 'c':
-		if (end == END)
-			for (end = 0; buf[end]; ++end) ;
 		writetmp(tmp, buf);
-		insertlines(buf, start, (end - start + 1), 0);
+		changelines(buf, start, end);
 		break;
 	case 'd':
 		writetmp(tmp, buf);
@@ -171,7 +169,7 @@ void command(char cmd, int start, int end, int dst)
 	case 'm':
 	case 't':
 		writetmp(tmp, buf);
-		movelines(buf, start, end, dst, cmd == 't');
+		movelines(buf, start, end, dst, cmd == 'm');
 		break;
 	case 's':
 		writetmp(tmp, buf);

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bled.h"
+#include "bed.h"
 
 int *find(char **buf, char *pat, int *len)
 {
