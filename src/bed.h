@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #define END -1
-#define get_len(buf, len) for(len = 0; buf[len]; ++len)
+#define get_len(buf, len) for(len = 0; buf[len]; ++len) ;
 
 // file operations
 char **readfile(char *);

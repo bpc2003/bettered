@@ -20,10 +20,8 @@ char **readfile(char *filename)
 	size_t size = 0;
 	ssize_t read, tot = 0;
 
-	for (int i = 0; (read = getline(&str, &size, fp)) > 0; ++i) {
-		if (i > BUFSIZ)
-			buf =
-			    (char **)realloc(buf, sizeof(char *) * sizeof(buf));
+	for (int i = 0; (read = getline(&str, &size, fp)) > 0 && i < BUFSIZ;
+	     ++i) {
 		buf[i] = strdup(str);
 		tot += read;
 	}
@@ -63,11 +61,9 @@ char **readtmp(FILE *tmp)
 
 	char *str = NULL;
 	size_t size = 0;
-	for (int i = 0; getline(&str, &size, tmp) > 0 && strcmp(str, ".\n");
+	for (int i = 0;
+	     getline(&str, &size, tmp) > 0 && strcmp(str, ".\n") && i < BUFSIZ;
 	     ++i) {
-		if (i > BUFSIZ)
-			buf =
-			    (char **)realloc(buf, sizeof(char *) * sizeof(buf));
 		buf[i] = strdup(str);
 	}
 	free(str);

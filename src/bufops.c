@@ -3,7 +3,7 @@
 #include <string.h>
 #include "bed.h"
 
-static char **getlines();
+static char **getlines(int *);
 
 void printlines(char **buf, int ln, int start, int end)
 {
@@ -19,9 +19,8 @@ void printlines(char **buf, int ln, int start, int end)
 
 void insertlines(char **buf, int pos, int ins)
 {
-	char **tmpbuf = getlines();
 	int nl, len;
-	get_len(tmpbuf, nl);
+	char **tmpbuf = getlines(&nl);
 	get_len(buf, len);
 	if (pos == END || pos > len)
 		pos = len;
@@ -38,22 +37,21 @@ void insertlines(char **buf, int pos, int ins)
 			buf[i] = strdup(tmpbuf[i - pos]);
 	}
 
-	for (int i = 0; tmpbuf[i]; ++i)
+	for (int i = 0; i < nl; ++i)
 		free(tmpbuf[i]);
 	free(tmpbuf);
 }
 
 void changelines(char **buf, int start, int end)
 {
-	char **tmpbuf = getlines();
 	int nl, len;
-	get_len(tmpbuf, nl);
+	char **tmpbuf = getlines(&nl);
 	get_len(buf, len);
 	if (end == END || end > len)
 		end = len;
 
 	int i, j;
-	for (i = start - 1, j = 0; i < end && tmpbuf[j]; ++i, ++j) {
+	for (i = start - 1, j = 0; i < end && j < nl; ++i, ++j) {
 		free(buf[i]);
 		buf[i] = strdup(tmpbuf[j]);
 	}
@@ -64,7 +62,7 @@ void changelines(char **buf, int start, int end)
 		for (; tmpbuf[j]; ++i, ++j)
 			buf[i] = strdup(tmpbuf[j]);
 	}
-	for (i = 0; tmpbuf[i]; ++i)
+	for (i = 0; i < nl; ++i)
 		free(tmpbuf[i]);
 	free(tmpbuf);
 }
@@ -123,7 +121,7 @@ void undo(FILE *tmp, char ***buf)
 	buf[0] = readtmp(tmp);
 }
 
-static char **getlines()
+static char **getlines(int *nl)
 {
 	char **tmpbuf = (char **)calloc(2, sizeof(char *));
 	char *tmp = NULL;
@@ -133,9 +131,9 @@ static char **getlines()
 		getline(&tmp, &size, stdin);
 		if (!strcmp(tmp, ".\n"))
 			break;
-		if (i >= 2)
+		if (i > 1)
 			tmpbuf =
-			    realloc(tmpbuf, sizeof(char *) * sizeof(tmpbuf));
+			    realloc(tmpbuf, sizeof(char *) * (i + 1));
 		tmpbuf[i++] = strdup(tmp);
 	}
 	if (i >= BUFSIZ) {
@@ -143,5 +141,6 @@ static char **getlines()
 		return NULL;
 	}
 	free(tmp);
+	*nl = i;
 	return tmpbuf;
 }
