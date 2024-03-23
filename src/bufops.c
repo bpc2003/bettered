@@ -56,10 +56,9 @@ void changelines(char **buf, int start, int end)
 		buf[i] = strdup(tmpbuf[j]);
 	}
 	if (j < nl) {
-		nl -= j;
 		for (int tmp = len; tmp > end; --tmp)
-			buf[tmp + nl - 1] = buf[tmp - 1];
-		for (; tmpbuf[j]; ++i, ++j)
+			buf[tmp + (nl - j) - 1] = buf[tmp - 1];
+		for (; j < nl; ++i, ++j)
 			buf[i] = strdup(tmpbuf[j]);
 	}
 	for (i = 0; i < nl; ++i)

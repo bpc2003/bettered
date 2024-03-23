@@ -5,12 +5,10 @@
 
 char **readfile(char *filename)
 {
-	FILE *fp = fopen(filename, "r");
 	char **buf = (char **)calloc(BUFSIZ, sizeof(char *));
-
 	if (filename == NULL)
 		return buf;
-
+	FILE *fp = fopen(filename, "r");
 	if (fp == NULL) {
 		perror(filename);
 		return buf;
@@ -19,14 +17,12 @@ char **readfile(char *filename)
 	char *str = NULL;
 	size_t size = 0;
 	ssize_t read, tot = 0;
-
 	for (int i = 0; (read = getline(&str, &size, fp)) > 0 && i < BUFSIZ;
 	     ++i) {
 		buf[i] = strdup(str);
 		tot += read;
 	}
 	free(str);
-
 	fclose(fp);
 	printf("%d\n", tot);
 	return buf;
