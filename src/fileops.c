@@ -5,7 +5,7 @@
 
 char **readfile(char *filename)
 {
-	char **buf = (char **)calloc(BUFSIZ, sizeof(char *));
+	char **buf = calloc(BUFSIZ, sizeof(char *));
 	if (filename == NULL)
 		return buf;
 	FILE *fp = fopen(filename, "r");
@@ -52,7 +52,7 @@ void writefile(char *filename, char **buf)
 
 char **readtmp(FILE *tmp)
 {
-	char **buf = (char **)calloc(BUFSIZ, sizeof(char *));
+	char **buf = calloc(BUFSIZ, sizeof(char *));
 	fseek(tmp, 0, SEEK_SET);
 
 	char *str = NULL;

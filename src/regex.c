@@ -4,86 +4,58 @@
 #include <string.h>
 #include "bed.h"
 
-int *find(char **buf, char *pat, int *len)
+int *find (char **buf, char *pat, int *len)
 {
-	int val, pos;
-	int *lines = (int *)calloc(1, sizeof(int));
-	if (lines == NULL) {
-		perror("Err");
-		return NULL;
-	}
+  int pos = 0;
+  *len = pos;
+  int *lines = calloc(1, sizeof (int));
+  regex_t re;
+  if (lines == NULL)
+    return NULL;
+  if (regcomp(&re, pat, 0)) {
+      fprintf (stderr, "?\n");
+      return NULL;
+  }
 
-	regex_t re;
+  for (int i = 0; buf[i]; ++i) {
+    if (regexec(&re, buf[i], 0, NULL, 0) == 0) {
+	    lines = realloc(lines, (++pos) * sizeof (int));
+	    lines[pos - 1] = i + 1;
+	  }
+  }
 
-	val = regcomp(&re, pat, 0);
-	if (val) {
-		fprintf(stderr, "?\n");
-		return NULL;
-	}
-	pos = 0;
-	for (int i = 0; buf[i]; ++i) {
-		val = regexec(&re, buf[i], 0, NULL, 0);
-		if (val == REG_NOMATCH)
-			continue;
-		else if (val == 0) {
-			lines = (int *)realloc(lines, (++pos) * sizeof(int));
-			lines[pos - 1] = i + 1;
-		}
-	}
-
-	*len = pos;
-	regfree(&re);
-	return lines;
+  *len = pos;
+  regfree(&re);
+  return lines;
 }
 
-void substitute(char **buf, int start, int end, char *pat, char *rep)
+void substitute (char **buf, int start, int end, char *pat, char *rep)
 {
-	int val;
-	regex_t re;
-	regmatch_t pmatch[1];
-
-	val = regcomp(&re, pat, 0);
-	if (val) {
-		fprintf(stderr, "?\n");
-		return;
-	}
-
-	for (int i = 0; buf[i]; ++i) {
-		val = regexec(&re, buf[i], 1, pmatch, 0);
-		if (val == 0) {
-			int p = 0;
-			int j;
-			for (j = pmatch[0].rm_so; j < pmatch[0].rm_eo; ++j) {
-				if (rep[p])
-					buf[i][j] = rep[p++];
-				else {
-					char *tmp =
-					    strdup(buf[i] + pmatch[0].rm_eo);
-					if (pmatch[0].rm_eo - 1 == p)
-						strcpy(buf[i] +
-						       (pmatch[0].rm_eo - 1),
-						       tmp);
-					else
-						strcpy(buf[i] +
-						       (pmatch[0].rm_eo - p -
-							1), tmp);
-					free(tmp);
-					break;
-				}
-			}
-			if (rep[p]) {
-				buf[i] =
-				    (char *)realloc(buf[i],
-						    strlen(buf[i]) +
-						    (strlen(rep) - (p + 1)));
-				for (int k = strlen(buf[i]); k >= p + 1; --k)
-					buf[i][k + (strlen(rep) - (p + 1))] =
-					    buf[i][k - 1];
-				for (; rep[p]; p++)
-					buf[i][j++] = rep[p];
-			}
-			printf("%s", buf[i]);
-		}
-	}
-	regfree(&re);
+  regex_t re;
+  regmatch_t pmatch[1];
+  if (regcomp(&re, pat, 0)) {
+      fprintf(stderr, "?\n");
+      return;
+  }
+  for (int i = 0; buf[i]; ++i) {
+    if (regexec(&re, buf[i], 1, pmatch, 0) == 0) {
+	      if (strlen(rep) <= strlen(pat)) {
+	        for (int j = pmatch[0].rm_so, p = 0; j < strlen(buf[i]); ++j) {
+		        if (p < strlen(rep))
+		          buf[i][j] = rep[p++];
+		        else
+		          buf[i][j] = buf[i][pmatch[0].rm_eo + j - p];
+		      }
+	      } else {
+	        buf[i] = realloc(buf[i], strlen(buf[i]) +
+				    strlen(rep) - strlen(pat) + 1);
+	        for (int j = strlen(buf[i]); j >= pmatch[0].rm_eo - 1; --j)
+		        buf[i][j + (strlen(rep) - strlen(pat))] = buf[i][j];
+	        for (int j = pmatch[0].rm_so; j < strlen(rep) + pmatch[0].rm_so; ++j)
+		        buf[i][j] = rep[j - pmatch[0].rm_so];
+	      }
+	    printf("%s", buf[i]);
+	  }
+  }
+  regfree(&re);
 }
