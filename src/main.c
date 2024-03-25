@@ -10,6 +10,8 @@ char *filename;
 char **buf;
 char *pat;
 char *rep;
+int flag = 0;
+unsigned long bufhash;
 
 void command(char, int, int, int);
 
@@ -19,21 +21,22 @@ int main(int argc, char **argv)
 		filename = strdup(argv[1]);
 	tmp = tmpfile();
 
-	shcmd = (char *)calloc(99, sizeof(char));
+	shcmd = calloc(100, sizeof(char));
 	char *cmdstr = NULL;
 	size_t size = 0;
 
-	pat = (char *)calloc(100, sizeof(char));
-	rep = (char *)calloc(100, sizeof(char));
+	pat = calloc(100, sizeof(char));
+	rep = calloc(100, sizeof(char));
 	int *lines, lineslen = 0;
 
 	buf = readfile(filename);
 	if (buf == NULL)
 		return 1;
+	bufhash = hash(buf);
 
 	int start = 1;
 	int end = END;
-	do {
+	while (1) {
 		getline(&cmdstr, &size, stdin);
 		char cmd;
 
@@ -83,11 +86,9 @@ int main(int argc, char **argv)
 				else if (cmdstr[0] == '!') {
 					if (i < 98 && cmdstr[i])
 						*str++ = cmdstr[i + 1];
-				} else
-				    if ((cmdstr[i] == '/' || cmdstr[i] == '?'
-					 || cmdstr[i] == '\\') && (cmd == 'g'
-								   || cmd ==
-								   's')) {
+				} else if ((cmdstr[i] == '/' ||
+						cmdstr[i] == '?' || cmdstr[i] == '\\')
+						&& (cmd == 'g' || cmd == 's')) {
 					char t = cmdstr[i];
 					if (i > 1) {
 						t = '\n';
@@ -95,6 +96,7 @@ int main(int argc, char **argv)
 					}
 					while (cmdstr[++i] != t)
 						*str++ = cmdstr[i];
+					*str = '\0';
 					continue;
 				} else if (cmdstr[i] == ' ') {
 					cmdstr[strlen(cmdstr) - 1] = '\0';
@@ -109,14 +111,7 @@ int main(int argc, char **argv)
 			cmd = cmdstr[i - 2];
 			if (lineslen == 0)
 				continue;
-		} else if (cmd == 'e') {
-			for (int i = 0; buf[i]; ++i)
-				free(buf[i]);
-			free(buf);
-			buf = readfile(filename);
-			continue;
 		}
-
 		if (lineslen > 0) {
 			int *it = lines;
 			while (lineslen > 0) {
@@ -129,18 +124,7 @@ int main(int argc, char **argv)
 		}
 
 		command(cmd, start, end, dst);
-	} while (strcmp(cmdstr, "q\n") && strcmp(cmdstr, "Q\n"));
-
-	fclose(tmp);
-	for (int i = 0; buf[i]; ++i)
-		free(buf[i]);
-	free(buf);
-	free(pat);
-	free(rep);
-	free(shcmd);
-	free(cmdstr);
-	free(filename);
-	exit(0);
+	}
 }
 
 void command(char cmd, int start, int end, int dst)
@@ -175,7 +159,28 @@ void command(char cmd, int start, int end, int dst)
 		writetmp(tmp, buf);
 		substitute(buf, start, end, pat, rep);
 		break;
+	case 'e':
+		if(bufhash == hash(buf) || flag) {
+			flag = 0;
+			for (int i = 0; buf[i]; ++i)
+					free(buf[i]);
+			free(buf);
+			buf = readfile(filename);
+			bufhash = hash(buf);
+		} else {
+			flag = 1;
+			fprintf(stderr, "?\n");
+		}
+		break;
+	case 'E':
+		for (int i = 0; buf[i]; ++i)
+			free(buf[i]);
+		free(buf);
+		buf = readfile(filename);
+		bufhash = hash(buf);
+		break;
 	case 'w':
+		bufhash = hash(buf);
 		writefile(filename, buf);
 		break;
 	case 'u':
@@ -185,8 +190,32 @@ void command(char cmd, int start, int end, int dst)
 		system(shcmd);
 		break;
 	case 'q':
+		if (hash(buf) != bufhash && !flag) {
+			fprintf(stderr, "?\n");
+			flag = 1;
+			break;
+		}
+		else {
+			for (int i = 0; buf[i]; ++i)
+				free(buf[i]);
+			free(buf);
+			free(shcmd);
+			free(pat);
+			free(rep);
+			free(filename);
+			fclose(tmp);
+			exit(0);
+		}
 	case 'Q':
-		break;
+		for (int i = 0; buf[i]; ++i)
+			free(buf[i]);
+		free(buf);
+		free(shcmd);
+		free(pat);
+		free(rep);
+		free(filename);
+		fclose(tmp);
+		exit(0);
 	default:
 		fprintf(stderr, "?\n");
 		break;

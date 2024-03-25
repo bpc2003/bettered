@@ -5,8 +5,8 @@
 
 // file operations
 char **readfile(char *);
-void writefile(char *, char **);
 char **readtmp(FILE *);
+void writefile(char *, char **);
 void writetmp(FILE *, char **);
 
 // buffer operations
@@ -20,3 +20,6 @@ void undo(FILE *, char ***);
 // regex
 int *find(char **, char *, int *);
 void substitute(char **, int, int, char *, char *);
+
+// hash
+unsigned long hash(char **);
