@@ -3,7 +3,7 @@
 #include <string.h>
 #include "bed.h"
 
-char **readfile(char *filename)
+char **readfile(char *filename, int suppress)
 {
 	char **buf = calloc(BUFSIZ, sizeof(char *));
 	if (filename == NULL)
@@ -24,11 +24,12 @@ char **readfile(char *filename)
 	}
 	free(str);
 	fclose(fp);
-	printf("%d\n", tot);
+	if (!suppress)
+		printf("%d\n", tot);
 	return buf;
 }
 
-void writefile(char *filename, char **buf)
+void writefile(char *filename, char **buf, int suppress)
 {
 	if (filename == NULL) {
 		fprintf(stderr, "?\n");
@@ -46,7 +47,8 @@ void writefile(char *filename, char **buf)
 		tot += fprintf(fp, "%s", buf[i]);
 
 	fclose(fp);
-	printf("%d\n", tot);
+	if (!suppress)
+		printf("%d\n", tot);
 	return;
 }
 

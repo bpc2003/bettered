@@ -13,12 +13,32 @@ char *rep;
 int flag = 0;
 unsigned long bufhash;
 
+struct {
+	unsigned int suppress : 1;
+} flags;
+
 void command(char, int, int, int);
 
 int main(int argc, char **argv)
 {
-	if (argc >= 2)
-		filename = strdup(argv[1]);
+	flags.suppress = 0;
+	if (argc >= 2) {
+		*++argv;
+		while(*argv) {
+			if (!strcmp(*argv, "-"))
+				flags.suppress = 1;
+			else if(*argv[0] == '-') {
+				switch (*argv[1]) {
+					default:
+						fprintf(stderr, "usage: - [suppress output from w and e commands]\n");
+						exit(1);
+				}
+			}
+			else
+				filename = strdup(*argv);
+			*++argv;
+		}
+	}
 	tmp = tmpfile();
 
 	shcmd = calloc(100, sizeof(char));
@@ -29,7 +49,7 @@ int main(int argc, char **argv)
 	rep = calloc(100, sizeof(char));
 	int *lines, lineslen = 0;
 
-	buf = readfile(filename);
+	buf = readfile(filename, flags.suppress);
 	if (buf == NULL)
 		return 1;
 	bufhash = hash(buf);
@@ -166,7 +186,7 @@ void command(char cmd, int start, int end, int dst)
 			for (int i = 0; buf[i]; ++i)
 					free(buf[i]);
 			free(buf);
-			buf = readfile(filename);
+			buf = readfile(filename, flags.suppress);
 			bufhash = hash(buf);
 		} else {
 			flag = 1;
@@ -177,12 +197,12 @@ void command(char cmd, int start, int end, int dst)
 		for (int i = 0; buf[i]; ++i)
 			free(buf[i]);
 		free(buf);
-		buf = readfile(filename);
+		buf = readfile(filename, flags.suppress);
 		bufhash = hash(buf);
 		break;
 	case 'w':
 		bufhash = hash(buf);
-		writefile(filename, buf);
+		writefile(filename, buf, flags.suppress);
 		break;
 	case 'u':
 		undo(tmp, &buf);

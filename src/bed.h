@@ -4,9 +4,9 @@
 #define get_len(buf, len) for(len = 0; buf[len]; ++len) ;
 
 // file operations
-char **readfile(char *);
+char **readfile(char *, int);
 char **readtmp(FILE *);
-void writefile(char *, char **);
+void writefile(char *, char **, int);
 void writetmp(FILE *, char **);
 
 // buffer operations
