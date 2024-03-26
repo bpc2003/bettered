@@ -100,6 +100,7 @@ int main(int argc, char **argv)
 					continue;
 				} else if (cmdstr[i] == ' ') {
 					cmdstr[strlen(cmdstr) - 1] = '\0';
+					free(filename);
 					filename = strdup(cmdstr + i + 1);
 				}
 				++i;
