@@ -112,6 +112,28 @@ void movelines(char **buf, int start, int end, int to, int cut)
 	free(tmpbuf);
 }
 
+void joinlines(char **buf, int start, int end)
+{
+	char **tmpbuf = calloc((end - start), sizeof(char *));
+	for (int i = start; i < end; ++i)
+		tmpbuf[i - start] = strdup(buf[i]);
+	dellines(buf, start + 1, end);
+
+	for (int i = 0; i < (end - start); ++i) {
+		char *tmp = malloc(strlen(buf[start - 1]) + strlen(tmpbuf[i]) + 1);
+		strcpy(tmp, buf[start - 1]);
+		tmp[strlen(buf[start - 1]) - 1] = '\0';
+		strcat(tmp, tmpbuf[i]);
+
+		free(buf[start - 1]);
+		buf[start - 1] = strdup(tmp);
+
+		free(tmp);
+		free(tmpbuf[i]);
+	}
+	free(tmpbuf);
+}
+
 void undo(FILE *tmp, char ***buf)
 {
 	for (int i = 0; buf[0][i]; ++i)

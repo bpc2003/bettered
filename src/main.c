@@ -176,6 +176,10 @@ void command(char cmd, int start, int end, int dst)
 		writetmp(tmp, buf);
 		movelines(buf, start, end, dst, cmd == 'm');
 		break;
+	case 'j':
+		writetmp(tmp, buf);
+		joinlines(buf, start, end);
+		break;
 	case 's':
 		writetmp(tmp, buf);
 		substitute(buf, start, end, pat, rep);
@@ -199,6 +203,10 @@ void command(char cmd, int start, int end, int dst)
 		free(buf);
 		buf = readfile(filename, flags.suppress);
 		bufhash = hash(buf);
+		break;
+	case 'W':
+		bufhash = hash(buf);
+		appendfile(filename, buf, flags.suppress);
 		break;
 	case 'w':
 		bufhash = hash(buf);

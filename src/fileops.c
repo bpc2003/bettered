@@ -45,11 +45,30 @@ void writefile(char *filename, char **buf, int suppress)
 
 	for (int i = 0; buf[i]; ++i)
 		tot += fprintf(fp, "%s", buf[i]);
-
 	fclose(fp);
 	if (!suppress)
 		printf("%d\n", tot);
-	return;
+}
+
+void appendfile(char *filename, char **buf, int suppress)
+{
+	if (filename == NULL) {
+		fprintf(stderr, "?\n");
+		return;
+	}
+	FILE *fp = fopen(filename, "a");
+	ssize_t tot = 0;
+
+	if (fp == NULL) {
+		perror(filename);
+		return;
+	}
+
+	for (int i = 0; buf[i]; ++i)
+		tot += fprintf(fp, "%s", buf[i]);
+	fclose(fp);
+	if (!suppress)
+		printf("%d\n", tot);
 }
 
 char **readtmp(FILE *tmp)

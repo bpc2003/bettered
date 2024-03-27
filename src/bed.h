@@ -8,6 +8,7 @@ char **readfile(char *, int);
 char **readtmp(FILE *);
 void writefile(char *, char **, int);
 void writetmp(FILE *, char **);
+void appendfile(char *, char **, int);
 
 // buffer operations
 void printlines(char **, int, int, int);
@@ -15,6 +16,7 @@ void insertlines(char **, int, int);
 void changelines(char **, int, int);
 void dellines(char **, int, int);
 void movelines(char **, int, int, int, int);
+void joinlines(char **, int, int);
 void undo(FILE *, char ***);
 
 // regex
