@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 			else if(*argv[0] == '-') {
 				switch (*argv[1]) {
 					default:
-						fprintf(stderr, "usage: - [suppress output from w and e commands]\n");
+						fprintf(stderr, "usage: - [suppress output from write, append, read, and edit commands]\n");
 						exit(1);
 				}
 			}
@@ -155,6 +155,12 @@ void command(char cmd, int start, int end, int dst)
 	case 'n':
 		printlines(buf, cmd == 'n', start, end);
 		break;
+	case 'f':
+		if (filename == NULL)
+			fprintf(stderr, "?\n");
+		else
+			printf("%s\n", filename);
+		break;
 	case 'a':
 		writetmp(tmp, buf);
 		insertlines(buf, end, 0);
@@ -183,6 +189,10 @@ void command(char cmd, int start, int end, int dst)
 	case 's':
 		writetmp(tmp, buf);
 		substitute(buf, start, end, pat, rep);
+		break;
+	case 'r':
+		writetmp(tmp, buf);
+		appendlines(buf, filename, flags.suppress);
 		break;
 	case 'e':
 		if(bufhash == hash(buf) || flag) {
