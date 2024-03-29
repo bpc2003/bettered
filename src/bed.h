@@ -17,7 +17,7 @@ void changelines(char **, int, int);
 void dellines(char **, int, int);
 void movelines(char **, int, int, int, int);
 void joinlines(char **, int, int);
-void appendlines(char **, char *, int);
+void appendlines(char **, char *, int, int);
 void undo(FILE *, char ***);
 
 // regex

@@ -79,13 +79,13 @@ void dellines(char **buf, int start, int end)
 
 	for (int i = start - 1, j = 0; i < len; ++i, ++j) {
 		free(buf[i]);
-		if (j < (len - end))
+		if (j < (len - end)) {
 			buf[i] = strdup(tmpbuf[j]);
+			free(tmpbuf[j]);
+		}
 		else
 			buf[i] = NULL;
 	}
-	for (int i = 0; tmpbuf[i]; ++i)
-		free(tmpbuf[i]);
 	free(tmpbuf);
 }
 
@@ -104,11 +104,10 @@ void movelines(char **buf, int start, int end, int to, int cut)
 
 	for (int i = len; i >= to; --i)
 		buf[(end - start + 1) + i - 1] = buf[i - 1];
-	for (int i = 0; i < (end - start + 1); ++i)
+	for (int i = 0; i < (end - start + 1); ++i) {
 		buf[to + i] = strdup(tmpbuf[i]);
-
-	for (int i = 0; i < (end - start + 1); ++i)
 		free(tmpbuf[i]);
+	}
 	free(tmpbuf);
 }
 
@@ -138,25 +137,38 @@ void joinlines(char **buf, int start, int end)
 	free(tmpbuf);
 }
 
-void appendlines(char **buf, char *filename, int suppress)
+void appendlines(char **buf, char *filename, int pos, int suppress)
 {
 	int len;
 	get_len(buf, len);
+	if (pos == END || pos > len)
+		pos = len;
+	char **tmpbuf = calloc(len - pos, sizeof(char *));
+	for (int i = pos; i < len; ++i)
+		tmpbuf[i - pos] = strdup(buf[i]);
 
-	char **tmpbuf = readfile(filename, suppress);
-	for (int i = 0; tmpbuf[i]; i++) {
-		buf[i + len] = strdup(tmpbuf[i]);
+	char **contents = readfile(filename, suppress);
+	int offset;
+	get_len(contents, offset);
+	for (int i = 0; i < len - pos; ++i) {
+		buf[i + pos + offset] = strdup(tmpbuf[i]);
 		free(tmpbuf[i]);
 	}
 	free(tmpbuf);
+	for (int i = 0; contents[i]; i++) {
+		free(buf[i + pos]);
+		buf[i + pos] = strdup(contents[i]);
+		free(contents[i]);
+	}
+	free(contents);
 }
 
 void undo(FILE *tmp, char ***buf)
 {
-	for (int i = 0; buf[0][i]; ++i)
-		free(buf[0][i]);
-	free(buf[0]);
-	buf[0] = readtmp(tmp);
+	for (int i = 0; (*buf)[i]; ++i)
+		free((*buf)[i]);
+	free(*buf);
+	*buf = readtmp(tmp);
 }
 
 static char **getlines(int *nl)

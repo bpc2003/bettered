@@ -192,7 +192,7 @@ void command(char cmd, int start, int end, int dst)
 		break;
 	case 'r':
 		writetmp(tmp, buf);
-		appendlines(buf, filename, flags.suppress);
+		appendlines(buf, filename, end, flags.suppress);
 		break;
 	case 'e':
 		if(bufhash == hash(buf) || flag) {
@@ -233,8 +233,7 @@ void command(char cmd, int start, int end, int dst)
 			fprintf(stderr, "?\n");
 			flag = 1;
 			break;
-		}
-		else {
+		} else {
 			for (int i = 0; buf[i]; ++i)
 				free(buf[i]);
 			free(buf);
