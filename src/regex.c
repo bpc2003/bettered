@@ -1,7 +1,4 @@
 #include <regex.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "bed.h"
 
 int *find(char **buf, char *pat, int *len)
@@ -37,7 +34,7 @@ void substitute(char **buf, int start, int end, char *pat, char *rep)
 		fprintf(stderr, "?\n");
 		return;
 	}
-	for (int i = 0; buf[i]; ++i) {
+	for (int i = start - 1; i < end; ++i) {
 		if (regexec(&re, buf[i], 1, pmatch, 0) == 0) {
 			if (strlen(rep) <= strlen(pat)) {
 				for (int j = pmatch[0].rm_so, p = 0;

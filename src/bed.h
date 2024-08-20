@@ -1,4 +1,8 @@
+#ifndef BED_H
+#define BED_H
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define END -1
 #define get_len(buf, len) for(len = 0; buf[len]; ++len) ;
@@ -26,3 +30,4 @@ void substitute(char **, int, int, char *, char *);
 
 // hash
 unsigned long hash(char **);
+#endif
