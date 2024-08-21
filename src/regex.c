@@ -26,6 +26,7 @@ int *find(char **buf, char *pat, int *len)
 	return lines;
 }
 
+// TODO: make function smaller
 void substitute(char **buf, int start, int end, char *pat, char *rep)
 {
 	regex_t re;
@@ -34,11 +35,12 @@ void substitute(char **buf, int start, int end, char *pat, char *rep)
 		fprintf(stderr, "?\n");
 		return;
 	}
+	if (end == END)
+		get_len(buf, end);
 	for (int i = start - 1; i < end; ++i) {
-		if (regexec(&re, buf[i], 1, pmatch, 0) == 0) {
+		if (regexec(&re, buf[i], 1, pmatch, 0) != REG_NOMATCH) {
 			if (strlen(rep) <= strlen(pat)) {
-				for (int j = pmatch[0].rm_so, p = 0;
-				     j < strlen(buf[i]); ++j) {
+				for (int j = pmatch[0].rm_so, p = 0; j < strlen(buf[i]); ++j) {
 					if (p < strlen(rep))
 						buf[i][j] = rep[p++];
 					else
@@ -49,8 +51,7 @@ void substitute(char **buf, int start, int end, char *pat, char *rep)
 						 strlen(rep) - strlen(pat) + 1);
 				for (int j = strlen(buf[i]); j >= pmatch[0].rm_eo - 1; --j)
 					buf[i][j + (strlen(rep) - strlen(pat))] = buf[i][j];
-				for (int j = pmatch[0].rm_so;
-				     j < strlen(rep) + pmatch[0].rm_so; ++j)
+				for (int j = pmatch[0].rm_so; j < strlen(rep) + pmatch[0].rm_so; ++j)
 					buf[i][j] = rep[j - pmatch[0].rm_so];
 			}
 			printf("%s", buf[i]);

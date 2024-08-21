@@ -118,7 +118,6 @@ void joinlines(char **buf, int start, int end)
 	for (int i = start; i < end; ++i)
 		tmpbuf[i - start] = strdup(buf[i]);
 	dellines(buf, start + 1, end);
-
 	for (int i = 0; i < (end - start); ++i) {
 		char *tmp =
 		    malloc(strlen(buf[start - 1]) + strlen(tmpbuf[i]) + 1);
@@ -143,7 +142,6 @@ void appendlines(char **buf, char *filename, int pos, int suppress)
 	char **tmpbuf = calloc(len - pos, sizeof(char *));
 	for (int i = pos; i < len; ++i)
 		tmpbuf[i - pos] = strdup(buf[i]);
-
 	char **contents = readfile(filename, suppress);
 	int offset;
 	get_len(contents, offset);

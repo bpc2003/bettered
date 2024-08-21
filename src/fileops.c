@@ -10,7 +10,6 @@ char **readfile(char *filename, int suppress)
 		perror(filename);
 		return buf;
 	}
-
 	char *str = NULL;
 	size_t size = 0;
 	ssize_t read, tot = 0;

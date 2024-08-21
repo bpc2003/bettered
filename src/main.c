@@ -16,6 +16,7 @@ struct {
 
 void command(char, int, int, int);
 
+// TODO: make parser smaller
 int main(int argc, char **argv)
 {
 	flags.suppress = 0;
