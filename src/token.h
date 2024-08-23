@@ -3,14 +3,15 @@
 
 typedef enum {
   // Single-Character tokens
-  BANG, SEPERATOR,
+  BANG = 1, COMMA,
 
   // Multi-Character tokens
-  NUMBER,
+  NUMBER, STRING,
 
   // Commands
-  APPEND, CHANGE, DELETE, GLOBAL, INSERT,
-  JOIN, MOVE, SUBSTITUTE, QUIT, TRANSFER, UNDO,
+  APPEND_FILE, APPEND_LINES, CHANGE, DELETE, GLOBAL, INSERT,
+  JOIN, MOVE, PRINT, READ, SUBSTITUTE, QUIT, TRANSFER, UNDO,
+  WRITE,
 
   ERROR
 } token_t;
