@@ -1,7 +1,7 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
-typedef enum {
+enum toktype {
   // Single-Character tokens
   BANG = 1, COMMA,
 
@@ -9,18 +9,20 @@ typedef enum {
   NUMBER, STRING,
 
   // Commands
-  APPEND_FILE, APPEND_LINES, CHANGE, DELETE, GLOBAL, INSERT,
-  JOIN, MOVE, PRINT, READ, SUBSTITUTE, QUIT, TRANSFER, UNDO,
-  WRITE,
+  APPEND_FILE, APPEND_LINES, CHANGE, DELETE, EDIT_CHECK, EDIT_NOCHECK,
+  GLOBAL, INSERT, JOIN, MOVE, PRINT, READ, SUBSTITUTE, QUIT, TRANSFER,
+  UNDO, WRITE,
 
   ERROR
-} token_t;
+};
 
-typedef struct {
-  token_t type;
+extern int len;
+
+struct token {
+  enum toktype type;
   void *literal;
-} Token;
+};
 
-Token *scanner(char *);
+struct token *scanner(char *);
 
 #endif

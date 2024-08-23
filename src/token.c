@@ -1,17 +1,20 @@
 #include "bed.h"
 #include "token.h"
 
-static void addtok(Token **, int *, token_t, void *);
+static void addtok(struct token **, int *, enum toktype, void *);
 static char *getpat(char *, int *);
+static char *getint(char *, int *);
 
-Token *scanner(char *src)
+int len = 0;
+
+struct token *scanner(char *src)
 {
-  Token *tokens = calloc(2, sizeof(Token));
+  struct token *tokens = calloc(2, sizeof(struct token));
   int pos = 0;
   if (tokens == NULL)
     return NULL;
  
-  for (int i = 0; i < strlen(src) - 1; ++i) {
+  for (int i = 0; i < strlen(src); ++i) {
     switch (src[i]) {
       case '!':
         addtok(&tokens, &pos, BANG, strndup(src + 1, strlen(src + 1) - 1));
@@ -54,8 +57,16 @@ Token *scanner(char *src)
         addtok(&tokens, &pos, UNDO, NULL);
         break;
       case 'r':
-        addtok(&tokens, &pos, READ, NULL);
-        break;
+        addtok(&tokens, &pos, READ, strndup(src + 2, strlen(src + 2) - 1));
+        return tokens;
+      case 'e':
+        addtok(&tokens, &pos, EDIT_CHECK, strndup(src + 2,
+                                                  strlen(src + 2) - 1));
+        return tokens;
+      case 'E':
+        addtok(&tokens, &pos, EDIT_NOCHECK, strndup(src + 2,
+                                                    strlen(src + 2) - 1));
+        return tokens;
       case 'W':
         addtok(&tokens, &pos, APPEND_FILE, NULL);
         break;
@@ -69,18 +80,22 @@ Token *scanner(char *src)
       case '\n':
         break;
       default:
-        addtok(&tokens, &pos, ERROR, strdup("?"));
+        if (src[i] >= '0' && src[i] <= '9')
+          addtok(&tokens, &pos, NUMBER, getint(src, &i));
+        else
+          addtok(&tokens, &pos, ERROR, NULL);
         break;
     }
   }
   return tokens;
 }
 
-static void addtok(Token **tokens, int *pos, token_t type, void *literal)
+static void addtok(struct token **tokens, int *pos, enum toktype type, void *literal)
 {
   if (*pos > 1)
-    *tokens = realloc(*tokens, sizeof(Token) * (*pos + 1));
-  (*tokens)[(*pos)++] = (Token) { .type = type, .literal = literal };
+    *tokens = realloc(*tokens, sizeof(struct token) * (*pos + 1));
+  (*tokens)[(*pos)++] = (struct token) { .type = type, .literal = literal };
+  ++len;
 }
 
 static char *getpat(char *src, int *srcpos)
@@ -92,4 +107,15 @@ static char *getpat(char *src, int *srcpos)
 
   char *pat = strndup(src + start, *srcpos - start);
   return pat;
+}
+
+static char *getint(char *src, int *srcpos)
+{
+  int start = *srcpos;
+  while (src[start] >= '0' && src[start] <= '9')
+    start++;
+  char *num = strndup(src + *srcpos, start - *srcpos);
+  if (src[start] == ',')
+    *srcpos = start;
+  return num;
 }
