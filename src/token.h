@@ -16,13 +16,12 @@ enum toktype {
   ERROR
 };
 
-extern int len;
-
 struct token {
   enum toktype type;
   void *literal;
 };
 
+extern int len;
 struct token *scanner(char *);
 
 #endif

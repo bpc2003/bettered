@@ -13,7 +13,7 @@ struct token *scanner(char *src)
   int pos = 0;
   if (tokens == NULL)
     return NULL;
- 
+
   for (int i = 0; i < strlen(src); ++i) {
     switch (src[i]) {
       case '!':
@@ -47,10 +47,10 @@ struct token *scanner(char *src)
       case 't':
         addtok(&tokens, &pos, TRANSFER, NULL);
         break;
-      case 'g': // Get pattern here
+      case 'g':
         addtok(&tokens, &pos, GLOBAL, getpat(src, &i));
         break;
-      case 's': // Get pattern here
+      case 's':
         addtok(&tokens, &pos, SUBSTITUTE, getpat(src, &i));
         break;
       case 'u':
