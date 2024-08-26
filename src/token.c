@@ -42,10 +42,12 @@ struct token *scanner(char *src)
         addtok(&tokens, &pos, JOIN, NULL);
         break;
       case 'm':
-        addtok(&tokens, &pos, MOVE, NULL);
+        i++;
+        addtok(&tokens, &pos, MOVE, getint(src, &i));
         break;
       case 't':
-        addtok(&tokens, &pos, TRANSFER, NULL);
+        i++;
+        addtok(&tokens, &pos, TRANSFER, getint(src, &i));
         break;
       case 'g':
         addtok(&tokens, &pos, GLOBAL, getpat(src, &i));

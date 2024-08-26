@@ -22,8 +22,7 @@ int main(int argc, char **argv)
 		filename = strdup(argv[1]);
 	else if (argc > 2)
 		exit(1);
-	if (filename != NULL)
-		buf = readfile(filename, 0);
+	buf = readfile(filename, 0);
 	size_t size = 0;
 	while (1) {
 		getline(&cmd, &size, stdin);
@@ -32,14 +31,23 @@ int main(int argc, char **argv)
 			switch (tokens[i].type) {
 				case BANG:
 					system(tokens[i].literal);
-					free(tokens[i].literal);
 					break;
 				case COMMA:
 					lines[0] = 1;
 					lines[1] = END;
 					break;
 				case PRINT:
-					printlines(buf, !strcmp(tokens[i].literal, "n"), lines[0], lines[1]);
+					printlines(buf, !strcmp(tokens[i].literal, "n"),
+								lines[0], lines[1]);
+					break;
+				case APPEND_LINES:
+					insertlines(buf, lines[1], 0);
+					break;
+				case CHANGE:
+					changelines(buf, lines[0], lines[1]);
+					break;
+				case INSERT:
+					insertlines(buf, lines[0], 1);
 					break;
 				case ERROR:
 					fprintf(stderr, "?\n");
@@ -50,7 +58,10 @@ int main(int argc, char **argv)
 					free(tokens);
 					exit(0);
 				case NUMBER:
-					lines[j++] = atoi(tokens[i].literal);
+					if (j < 2)
+						lines[j++] = atoi(tokens[i].literal);
+					else
+						break;
 					if (j == 1)
 						lines[j] = lines[j - 1];
 					break;
@@ -69,9 +80,7 @@ int main(int argc, char **argv)
 static void freeall() {
 	free(cmd);
 	free(filename);
-	if (buf != NULL) {
-		for (int i = 0; buf[i]; ++i)
-			free(buf[i]);
-		free(buf);
-	}
+	for (int i = 0; buf[i]; ++i)
+		free(buf[i]);
+	free(buf);
 }
