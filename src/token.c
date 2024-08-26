@@ -84,6 +84,8 @@ struct token *scanner(char *src)
       default:
         if (src[i] >= '0' && src[i] <= '9')
           addtok(&tokens, &pos, NUMBER, getint(src, &i));
+        else if (src[i] == '$')
+            addtok(&tokens, &pos, NUMBER, strdup("-1"));
         else
           addtok(&tokens, &pos, ERROR, NULL);
         break;

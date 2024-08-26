@@ -24,8 +24,7 @@ int main(int argc, char **argv)
 		exit(1);
 	buf = readfile(filename, 0);
 	size_t size = 0;
-	while (1) {
-		getline(&cmd, &size, stdin);
+	while (getline(&cmd, &size, stdin) > 0) {
 		struct token *tokens = scanner(cmd);
 		for (int i = 0, j = 0; i < len; ++i) {
 			switch (tokens[i].type) {
@@ -48,6 +47,37 @@ int main(int argc, char **argv)
 					break;
 				case INSERT:
 					insertlines(buf, lines[0], 1);
+					break;
+				case DELETE:
+					dellines(buf, lines[0], lines[1]);
+					break;
+				case JOIN:
+					joinlines(buf, lines[0], lines[1]);
+					break;
+				case MOVE:
+					if (strlen(tokens[i].literal) == 0)
+						fprintf(stderr, "?\n");
+					else
+						movelines(buf, lines[0], lines[1], atoi(tokens[i].literal), 1);
+					break;
+				case TRANSFER:
+					if (strlen(tokens[i].literal) == 0)
+						fprintf(stderr, "?\n");
+					else
+						movelines(buf, lines[0], lines[1], atoi(tokens[i].literal), 0);
+					break;
+				case EDIT_CHECK:
+				case EDIT_NOCHECK:
+					if (filename != NULL)
+						free(filename);
+					filename = strdup(tokens[i].literal);
+					for (int i = 0; buf[i]; ++i)
+						free(buf[i]);
+					free(buf);
+					buf = readfile(filename, 0);
+					break;
+				case WRITE:
+					writefile(filename, buf, 0);
 					break;
 				case ERROR:
 					fprintf(stderr, "?\n");
