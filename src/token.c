@@ -76,8 +76,10 @@ struct token *scanner(char *src)
         addtok(&tokens, &pos, WRITE, NULL);
         break;
       case 'q':
+        addtok(&tokens, &pos, QUIT_CHECK, NULL);
+        break;
       case 'Q':
-        addtok(&tokens, &pos, QUIT, strndup(src + i, 1));
+        addtok(&tokens, &pos, QUIT_NOCHECK, NULL);
         break;
       case '\n':
         break;

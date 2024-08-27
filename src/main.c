@@ -15,6 +15,9 @@ char **buf = NULL;
 
 FILE *tmp;
 
+unsigned long bufhash;
+int w = 0;
+
 static void freeall();
 
 // TODO: make parser smaller
@@ -26,8 +29,13 @@ int main(int argc, char **argv)
 	else if (argc > 2)
 		exit(1);
 	buf = readfile(filename, 0);
+	bufhash = hash(buf);
 	size_t size = 0;
-	while (getline(&cmd, &size, stdin) > 0) {
+	while (1) {
+		if (getline(&cmd, &size, stdin) <= 0) {
+			freeall();
+			exit(0);
+		}
 		struct token *tokens = scanner(cmd);
 		for (int i = 0, j = 0; i < len; ++i) {
 			switch (tokens[i].type) {
@@ -80,31 +88,66 @@ int main(int argc, char **argv)
 					undo(tmp, &buf);
 					break;
 				case EDIT_CHECK:
+					if (hash(buf) != bufhash && !w) {
+						fprintf(stderr, "?\n");
+						w = 1;
+					} else {
+						if (strlen(tokens[i].literal)) {
+							if (filename != NULL)
+								free(filename);
+							filename = strdup(tokens[i].literal);
+							for (int i = 0; buf[i]; ++i)
+								free(buf[i]);
+							free(buf);
+							buf = readfile(filename, 0);
+							bufhash = hash(buf);
+							w = 0;
+						}
+						else
+							fprintf(stderr, "?\n");
+					}
+					break;
 				case EDIT_NOCHECK:
-					if (filename != NULL)
-						free(filename);
-					filename = strdup(tokens[i].literal);
-					for (int i = 0; buf[i]; ++i)
-						free(buf[i]);
-					free(buf);
-					buf = readfile(filename, 0);
+					if (strlen(tokens[i].literal) == 0)
+						fprintf(stderr, "?\n");
+					else {
+						if (filename != NULL)
+							free(filename);
+						filename = strdup(tokens[i].literal);
+						for (int i = 0; buf[i]; ++i)
+							free(buf[i]);
+						free(buf);
+						buf = readfile(filename, 0);
+						bufhash = hash(buf);
+					}
 					break;
 				case READ:
 					writetmp(tmp, buf);
 					appendlines(buf, tokens[i].literal, lines[1], 0);
 					break;
 				case APPEND_FILE:
+					bufhash = hash(buf);
 					appendfile(filename, buf, 0);
 					break;
 				case WRITE:
+					bufhash = hash(buf);
 					writefile(filename, buf, 0);
 					break;
 				case ERROR:
 					fprintf(stderr, "?\n");
 					break;
-				case QUIT:
+				case QUIT_CHECK:
+					if (bufhash != hash(buf) && !w) {
+						fprintf(stderr, "?\n");
+						w = 1;
+						break;
+					}	else {
+						freeall();
+						free(tokens);
+						exit(0);
+					}
+				case QUIT_NOCHECK:
 					freeall();
-					free(tokens[i].literal);
 					free(tokens);
 					exit(0);
 				case NUMBER:
