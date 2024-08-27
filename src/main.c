@@ -13,11 +13,14 @@ char *cmd = NULL;
 char *filename = NULL;
 char **buf = NULL;
 
+FILE *tmp;
+
 static void freeall();
 
 // TODO: make parser smaller
 int main(int argc, char **argv)
 {
+	tmp = tmpfile();
 	if (argc == 2)
 		filename = strdup(argv[1]);
 	else if (argc > 2)
@@ -40,31 +43,41 @@ int main(int argc, char **argv)
 								lines[0], lines[1]);
 					break;
 				case APPEND_LINES:
+					writetmp(tmp, buf);
 					insertlines(buf, lines[1], 0);
 					break;
 				case CHANGE:
+					writetmp(tmp, buf);
 					changelines(buf, lines[0], lines[1]);
 					break;
 				case INSERT:
+					writetmp(tmp, buf);
 					insertlines(buf, lines[0], 1);
 					break;
 				case DELETE:
+					writetmp(tmp, buf);
 					dellines(buf, lines[0], lines[1]);
 					break;
 				case JOIN:
+					writetmp(tmp, buf);
 					joinlines(buf, lines[0], lines[1]);
 					break;
 				case MOVE:
+					writetmp(tmp, buf);
 					if (strlen(tokens[i].literal) == 0)
 						fprintf(stderr, "?\n");
 					else
 						movelines(buf, lines[0], lines[1], atoi(tokens[i].literal), 1);
 					break;
 				case TRANSFER:
+					writetmp(tmp, buf);
 					if (strlen(tokens[i].literal) == 0)
 						fprintf(stderr, "?\n");
 					else
 						movelines(buf, lines[0], lines[1], atoi(tokens[i].literal), 0);
+					break;
+				case UNDO:
+					undo(tmp, &buf);
 					break;
 				case EDIT_CHECK:
 				case EDIT_NOCHECK:
@@ -75,6 +88,13 @@ int main(int argc, char **argv)
 						free(buf[i]);
 					free(buf);
 					buf = readfile(filename, 0);
+					break;
+				case READ:
+					writetmp(tmp, buf);
+					appendlines(buf, tokens[i].literal, lines[1], 0);
+					break;
+				case APPEND_FILE:
+					appendfile(filename, buf, 0);
 					break;
 				case WRITE:
 					writefile(filename, buf, 0);
@@ -113,4 +133,5 @@ static void freeall() {
 	for (int i = 0; buf[i]; ++i)
 		free(buf[i]);
 	free(buf);
+	fclose(tmp);
 }
