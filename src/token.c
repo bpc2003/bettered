@@ -3,6 +3,7 @@
 
 static void addtok(struct token **, int *, enum toktype, void *);
 static char *getpat(char *, int *);
+static char **getpr(char *, int *);
 static char *getint(char *, int *);
 
 int len = 0;
@@ -53,11 +54,15 @@ struct token *scanner(char *src)
         addtok(&tokens, &pos, GLOBAL, getpat(src, &i));
         break;
       case 's':
-        addtok(&tokens, &pos, SUBSTITUTE, getpat(src, &i));
-        break;
+        addtok(&tokens, &pos, SUBSTITUTE, getpr(src, &i));
+        return tokens;
       case 'u':
         addtok(&tokens, &pos, UNDO, NULL);
         break;
+      case 'f':
+        addtok(&tokens, &pos, PRINT_FILENAME, strndup(src + 2,
+                                                      strlen(src + 2) - 1));
+        return tokens;
       case 'r':
         addtok(&tokens, &pos, READ, strndup(src + 2, strlen(src + 2) - 1));
         return tokens;
@@ -114,6 +119,16 @@ static char *getpat(char *src, int *srcpos)
 
   char *pat = strndup(src + start, *srcpos - start);
   return pat;
+}
+
+static char **getpr(char *src, int *srcpos)
+{
+  char **pr = calloc(2, sizeof(char *));
+  *pr = getpat(src, srcpos);
+  ++*srcpos;
+  *(pr + 1) = strndup(src + *srcpos, strlen(src + *srcpos) - 1);
+
+  return pr;
 }
 
 static char *getint(char *src, int *srcpos)

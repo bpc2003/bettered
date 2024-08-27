@@ -4,6 +4,7 @@
 
 struct {
 	unsigned int suppress : 1;
+	unsigned int warn : 1;
 } flags;
 
 extern int len;
@@ -16,7 +17,6 @@ char **buf = NULL;
 FILE *tmp;
 
 unsigned long bufhash;
-int w = 0;
 
 static void freeall();
 static int checkname(char *);
@@ -25,11 +25,18 @@ static int checkname(char *);
 int main(int argc, char **argv)
 {
 	tmp = tmpfile();
-	if (argc == 2)
-		filename = strdup(argv[1]);
-	else if (argc > 2)
-		exit(1);
-	buf = readfile(filename, 0);
+	if (argc >= 2) {
+		for (int i = 1; i < argc; i++) {
+			if (strcmp(argv[i], "-") == 0)
+				flags.suppress = 1;
+			else if (strcmp(argv[i], "-o") == 0)
+				filename = strdup("/dev/stdout");
+			else
+				filename = strdup(argv[i]);
+		}
+	}
+	buf = readfile(!strcmp(filename, "/dev/stdout") ? NULL : filename,
+								flags.suppress);
 	bufhash = hash(buf);
 	size_t size = 0;
 	while (1) {
@@ -42,6 +49,8 @@ int main(int argc, char **argv)
 			switch (tokens[i].type) {
 				case BANG:
 					system(tokens[i].literal);
+					if (!flags.suppress)
+						printf("!\n");
 					break;
 				case COMMA:
 					lines[0] = 1;
@@ -85,13 +94,26 @@ int main(int argc, char **argv)
 					else
 						movelines(buf, lines[0], lines[1], atoi(tokens[i].literal), 0);
 					break;
+				case SUBSTITUTE:
+					writetmp(tmp, buf);
+					char **pr = (char **) tokens[i].literal;
+					substitute(buf, lines[0], lines[1], *pr, *(pr + 1));
+					for (int k = 0; k < 2; ++k)
+						free(pr[k]);
+					break;
 				case UNDO:
 					undo(tmp, &buf);
 					break;
-				case EDIT_CHECK:
-					if (hash(buf) != bufhash && !w) {
+				case PRINT_FILENAME:
+					if (checkname(tokens[i].literal) == 0)
 						fprintf(stderr, "?\n");
-						w = 1;
+					else
+						printf("%s\n", filename);
+					break;
+				case EDIT_CHECK:
+					if (hash(buf) != bufhash && !flags.warn) {
+						fprintf(stderr, "?\n");
+						flags.warn = 1;
 					} else {
 						if (checkname(tokens[i].literal) == 0)
 							fprintf(stderr, "?\n");
@@ -99,9 +121,9 @@ int main(int argc, char **argv)
 							for (int i = 0; buf[i]; ++i)
 								free(buf[i]);
 							free(buf);
-							buf = readfile(filename, 0);
+							buf = readfile(filename, flags.suppress);
 							bufhash = hash(buf);
-							w = 0;
+							flags.warn = 0;
 						}
 					}
 					break;
@@ -112,7 +134,7 @@ int main(int argc, char **argv)
 						for (int i = 0; buf[i]; ++i)
 							free(buf[i]);
 						free(buf);
-						buf = readfile(filename, 0);
+						buf = readfile(filename, flags.suppress);
 						bufhash = hash(buf);
 					}
 					break;
@@ -121,7 +143,7 @@ int main(int argc, char **argv)
 						fprintf(stderr, "?\n");
 					else {
 						writetmp(tmp, buf);
-						appendlines(buf, filename, lines[1], 0);
+						appendlines(buf, filename, lines[1], flags.suppress);
 					}
 					break;
 				case APPEND_FILE:
@@ -129,7 +151,7 @@ int main(int argc, char **argv)
 						fprintf(stderr, "?\n");
 					else {
 						bufhash = hash(buf);
-						appendfile(filename, buf, 0);
+						appendfile(filename, buf, flags.suppress);
 					}
 					break;
 				case WRITE:
@@ -137,16 +159,16 @@ int main(int argc, char **argv)
 						fprintf(stderr, "?\n");
 					else {
 						bufhash = hash(buf);
-						writefile(filename, buf, 0);
+						writefile(filename, buf, flags.suppress);
 					}
 					break;
 				case ERROR:
 					fprintf(stderr, "?\n");
 					break;
 				case QUIT_CHECK:
-					if (bufhash != hash(buf) && !w) {
+					if (bufhash != hash(buf) && !flags.warn) {
 						fprintf(stderr, "?\n");
-						w = 1;
+						flags.warn = 1;
 						break;
 					}	else {
 						freeall();
@@ -166,7 +188,7 @@ int main(int argc, char **argv)
 						lines[j] = lines[j - 1];
 					break;
 				default:
-					printf("%d - %s\n", tokens[i].type, tokens[i].literal);
+					printf("%d - %s\n", tokens[i].type, *((char **)tokens[i].literal));
 					break;
 			}
 			if (tokens[i].literal != NULL)
