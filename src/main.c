@@ -19,6 +19,7 @@ unsigned long bufhash;
 int w = 0;
 
 static void freeall();
+static int checkname(char *);
 
 // TODO: make parser smaller
 int main(int argc, char **argv)
@@ -92,10 +93,9 @@ int main(int argc, char **argv)
 						fprintf(stderr, "?\n");
 						w = 1;
 					} else {
-						if (strlen(tokens[i].literal)) {
-							if (filename != NULL)
-								free(filename);
-							filename = strdup(tokens[i].literal);
+						if (checkname(tokens[i].literal) == 0)
+							fprintf(stderr, "?\n");
+						else {
 							for (int i = 0; buf[i]; ++i)
 								free(buf[i]);
 							free(buf);
@@ -103,17 +103,12 @@ int main(int argc, char **argv)
 							bufhash = hash(buf);
 							w = 0;
 						}
-						else
-							fprintf(stderr, "?\n");
 					}
 					break;
 				case EDIT_NOCHECK:
-					if (strlen(tokens[i].literal) == 0)
+					if (checkname(tokens[i].literal) == 0)
 						fprintf(stderr, "?\n");
 					else {
-						if (filename != NULL)
-							free(filename);
-						filename = strdup(tokens[i].literal);
 						for (int i = 0; buf[i]; ++i)
 							free(buf[i]);
 						free(buf);
@@ -122,16 +117,28 @@ int main(int argc, char **argv)
 					}
 					break;
 				case READ:
-					writetmp(tmp, buf);
-					appendlines(buf, tokens[i].literal, lines[1], 0);
+					if (checkname(tokens[i].literal) == 0)
+						fprintf(stderr, "?\n");
+					else {
+						writetmp(tmp, buf);
+						appendlines(buf, filename, lines[1], 0);
+					}
 					break;
 				case APPEND_FILE:
-					bufhash = hash(buf);
-					appendfile(filename, buf, 0);
+					if(checkname(tokens[i].literal) == 0)
+						fprintf(stderr, "?\n");
+					else {
+						bufhash = hash(buf);
+						appendfile(filename, buf, 0);
+					}
 					break;
 				case WRITE:
-					bufhash = hash(buf);
-					writefile(filename, buf, 0);
+					if (checkname(tokens[i].literal) == 0)
+						fprintf(stderr, "?\n");
+					else {
+						bufhash = hash(buf);
+						writefile(filename, buf, 0);
+					}
 					break;
 				case ERROR:
 					fprintf(stderr, "?\n");
@@ -177,4 +184,13 @@ static void freeall() {
 		free(buf[i]);
 	free(buf);
 	fclose(tmp);
+}
+
+static int checkname(char *s) {
+	if (strlen(s)) {
+		if (filename != NULL)
+			free(filename);
+		filename = strdup(s);
+	}
+	return filename == NULL ? 0 : strlen(filename);
 }

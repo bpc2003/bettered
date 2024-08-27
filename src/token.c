@@ -70,11 +70,12 @@ struct token *scanner(char *src)
                                                     strlen(src + 2) - 1));
         return tokens;
       case 'W':
-        addtok(&tokens, &pos, APPEND_FILE, NULL);
-        break;
+        addtok(&tokens, &pos, APPEND_FILE, strndup(src + 2,
+                                                   strlen(src + 2) - 1));
+        return tokens;
       case 'w':
-        addtok(&tokens, &pos, WRITE, NULL);
-        break;
+        addtok(&tokens, &pos, WRITE, strndup(src + 2, strlen(src + 2) - 1));
+        return tokens;
       case 'q':
         addtok(&tokens, &pos, QUIT_CHECK, NULL);
         break;
