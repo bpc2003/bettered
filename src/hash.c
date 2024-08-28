@@ -1,4 +1,4 @@
-#include "bettered.h"
+#include "hash.h"
 
 unsigned long hash(char **buf)
 {

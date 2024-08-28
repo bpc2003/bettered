@@ -1,5 +1,4 @@
-#include <regex.h>
-#include "bettered.h"
+#include "regexp.h"
 
 int *find(char **buf, char *pat, int *len)
 {
