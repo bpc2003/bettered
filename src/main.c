@@ -62,15 +62,20 @@ int main(int argc, char **argv)
 									lines[0], lines[1]);
 							break;
 						case DELETE:
-							writetmp(tmp, buf);
+							if (k - llen == 0)
+								writetmp(tmp, buf);
 							dellines(buf, lines[0], lines[1]);
 							break;
 						case TRANSFER:
-							writetmp(tmp, buf);
+							if (k - llen == 0)
+								writetmp(tmp, buf);
 							movelines(buf, lines[0], lines[1], *((int *)tokens[i].literal), 0);
 							break;
 						case MOVE:
-							writetmp(tmp, buf);
+							if (k - llen == 0)
+								writetmp(tmp, buf);
+							if (flines[k-llen+1] < *((int *)tokens[i].literal))
+								flines[k-llen+1]--;
 							movelines(buf, lines[0], lines[1], *((int *)tokens[i].literal), 1);
 							break;
 						default:
