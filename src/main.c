@@ -8,6 +8,8 @@ struct {
 
 extern int len;
 int lines[2] = {1, END};
+int *flines;
+int llen;
 
 char *cmd = NULL;
 char *filename = NULL;
@@ -20,7 +22,6 @@ unsigned long bufhash;
 static void freeall();
 static int checkname(char *);
 
-// TODO: make parser smaller
 int main(int argc, char **argv)
 {
 	tmp = tmpfile();
@@ -30,6 +31,10 @@ int main(int argc, char **argv)
 				flags.suppress = 1;
 			else if (strcmp(argv[i], "-o") == 0)
 				filename = strdup("/dev/stdout");
+			else if (argv[i][0] == '-') {
+				fprintf(stderr, "%s: usage: [-] [-o] [file]\n", argv[0]);
+				exit(1);
+			}
 			else
 				filename = strdup(argv[i]);
 		}
@@ -48,6 +53,35 @@ int main(int argc, char **argv)
 		}
 		struct token *tokens = scanner(cmd);
 		for (int i = 0, j = 0; i < len; ++i) {
+			if (llen > 0) {
+				for (int k = llen; llen > 0; llen--) {
+					lines[0] = lines[1] = flines[k-llen];
+					switch (tokens[i].type) {
+						case PRINT:
+							printlines(buf, !strcmp(tokens[i].literal, "n"),
+									lines[0], lines[1]);
+							break;
+						case DELETE:
+							writetmp(tmp, buf);
+							dellines(buf, lines[0], lines[1]);
+							break;
+						case TRANSFER:
+							writetmp(tmp, buf);
+							movelines(buf, lines[0], lines[1], *((int *)tokens[i].literal), 0);
+							break;
+						case MOVE:
+							writetmp(tmp, buf);
+							movelines(buf, lines[0], lines[1], *((int *)tokens[i].literal), 1);
+							break;
+						default:
+							fprintf(stderr, "?\n");
+							break;
+					}
+				}
+				if (tokens[i].literal != NULL)
+					free(tokens[i].literal);
+				break;
+			}
 			switch (tokens[i].type) {
 				case BANG:
 					system(tokens[i].literal);
@@ -96,6 +130,9 @@ int main(int argc, char **argv)
 					substitute(buf, lines[0], lines[1], pr[0], pr[1]);
 					for (int k = 0; k < 2; ++k)
 						free(pr[k]);
+					break;
+				case GLOBAL:
+					flines = find(buf, tokens[i].literal, &llen);
 					break;
 				case UNDO:
 					undo(tmp, &buf);
@@ -183,9 +220,6 @@ int main(int argc, char **argv)
 					if (j == 1)
 						lines[j] = lines[j - 1];
 					break;
-				default:
-					printf("%d - %s\n", tokens[i].type, tokens[i].literal);
-					break;
 			}
 			if (tokens[i].literal != NULL)
 				free(tokens[i].literal);
@@ -201,6 +235,7 @@ static void freeall() {
 	for (int i = 0; buf[i]; ++i)
 		free(buf[i]);
 	free(buf);
+	free(flines);
 	fclose(tmp);
 }
 
