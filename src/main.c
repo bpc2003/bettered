@@ -82,17 +82,11 @@ int main(int argc, char **argv)
 					break;
 				case MOVE:
 					writetmp(tmp, buf);
-					if (strlen(tokens[i].literal) == 0)
-						fprintf(stderr, "?\n");
-					else
-						movelines(buf, lines[0], lines[1], atoi(tokens[i].literal), 1);
+					movelines(buf, lines[0], lines[1], *((int *)tokens[i].literal), 1);
 					break;
 				case TRANSFER:
 					writetmp(tmp, buf);
-					if (strlen(tokens[i].literal) == 0)
-						fprintf(stderr, "?\n");
-					else
-						movelines(buf, lines[0], lines[1], atoi(tokens[i].literal), 0);
+					movelines(buf, lines[0], lines[1], *((int *)tokens[i].literal), 0);
 					break;
 				case SUBSTITUTE:
 					writetmp(tmp, buf);
@@ -181,7 +175,7 @@ int main(int argc, char **argv)
 					exit(0);
 				case NUMBER:
 					if (j < 2)
-						lines[j++] = atoi(tokens[i].literal);
+						lines[j++] = *((int *) tokens[i].literal);
 					else
 						break;
 					if (j == 1)

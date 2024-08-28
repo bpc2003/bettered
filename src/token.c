@@ -4,14 +4,14 @@
 static void addtok(struct token **, int *, enum toktype, void *);
 static char *getpat(char *, int *);
 static char **getpr(char *, int *);
-static char *getint(char *, int *);
+static int getint(char *, int *);
 
 int len = 0;
 
 struct token *scanner(char *src)
 {
   struct token *tokens = calloc(2, sizeof(struct token));
-  int pos = 0;
+  int p, pos = 0;
   if (tokens == NULL)
     return NULL;
 
@@ -44,12 +44,26 @@ struct token *scanner(char *src)
         break;
       case 'm':
         i++;
-        addtok(&tokens, &pos, MOVE, getint(src, &i));
-        break;
+        if ((p = getint(src, &i)) > 0) {
+          void *n = calloc(1, sizeof(int));
+          *((int *) n) = p;
+          addtok(&tokens, &pos, MOVE, n);
+          break;
+        } else {
+          addtok(&tokens, &pos, ERROR, NULL);
+          return tokens;
+        }
       case 't':
         i++;
-        addtok(&tokens, &pos, TRANSFER, getint(src, &i));
-        break;
+        if((p = getint(src, &i)) > 0) {
+          void *n = calloc(1, sizeof(int));
+          *((int *) n) = p;
+          addtok(&tokens, &pos, TRANSFER, n);
+          break;
+        } else {
+          addtok(&tokens, &pos, ERROR, NULL);
+          return tokens;
+        }
       case 'g':
         addtok(&tokens, &pos, GLOBAL, getpat(src, &i));
         break;
@@ -90,8 +104,11 @@ struct token *scanner(char *src)
       case '\n':
         break;
       default:
-        if (src[i] >= '0' && src[i] <= '9')
-          addtok(&tokens, &pos, NUMBER, getint(src, &i));
+        if (src[i] >= '0' && src[i] <= '9') {
+          void *n = calloc(1, sizeof(int));
+          *((int *) n) = getint(src, &i);
+          addtok(&tokens, &pos, NUMBER, n);
+        }
         else if (src[i] == '$')
             addtok(&tokens, &pos, NUMBER, strdup("-1"));
         else
@@ -131,13 +148,15 @@ static char **getpr(char *src, int *srcpos)
   return pr;
 }
 
-static char *getint(char *src, int *srcpos)
+static int getint(char *src, int *srcpos)
 {
   int start = *srcpos;
   while (src[start] >= '0' && src[start] <= '9')
     start++;
-  char *num = strndup(src + *srcpos, start - *srcpos);
+  char *tmp = strndup(src + *srcpos, start - *srcpos);
+  int n = atoi(tmp);
+  free(tmp);
   if (src[start] == ',')
     *srcpos = start;
-  return num;
+  return n;
 }
