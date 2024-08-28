@@ -1,4 +1,4 @@
-#include "bed.h"
+#include "fileops.h"
 
 char **readfile(char *filename, int suppress)
 {

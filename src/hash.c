@@ -1,4 +1,4 @@
-#include "bed.h"
+#include "bettered.h"
 
 unsigned long hash(char **buf)
 {

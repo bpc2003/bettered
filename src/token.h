@@ -6,7 +6,7 @@ enum toktype {
   BANG = 1, COMMA,
 
   // Multi-Character tokens
-  NUMBER, STRING,
+  NUMBER,
 
   // Commands
   APPEND_FILE, APPEND_LINES, CHANGE, DELETE, EDIT_CHECK, EDIT_NOCHECK,

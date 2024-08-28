@@ -1,4 +1,4 @@
-#include "bed.h"
+#include "bufops.h"
 
 static char **getlines(int *);
 

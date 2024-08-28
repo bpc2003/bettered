@@ -1,20 +1,14 @@
-#ifndef BED_H
-#define BED_H
+#ifndef BUFOPS_H
+#define BUFOPS_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "fileops.h"
 
 #define END -1
 #define get_len(buf, len) for(len = 0; buf[len]; ++len) ;
 
-// file operations
-char **readfile(char *, int);
-char **readtmp(FILE *);
-void writefile(char *, char **, int);
-void writetmp(FILE *, char **);
-void appendfile(char *, char **, int);
-
-// buffer operations
 void printlines(char **, int, int, int);
 void insertlines(char **, int, int);
 void changelines(char **, int, int);
@@ -24,10 +18,4 @@ void joinlines(char **, int, int);
 void appendlines(char **, char *, int, int);
 void undo(FILE *, char ***);
 
-// regex
-int *find(char **, char *, int *);
-void substitute(char **, int, int, char *, char *);
-
-// hash
-unsigned long hash(char **);
 #endif

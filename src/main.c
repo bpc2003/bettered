@@ -1,6 +1,5 @@
 #include <ctype.h>
-#include "bed.h"
-#include "token.h"
+#include "bettered.h"
 
 struct {
 	unsigned int suppress : 1;
@@ -35,8 +34,11 @@ int main(int argc, char **argv)
 				filename = strdup(argv[i]);
 		}
 	}
-	buf = readfile(!strcmp(filename, "/dev/stdout") ? NULL : filename,
+	if (filename != NULL)
+		buf = readfile(!strcmp(filename, "/dev/stdout") ? NULL : filename,
 								flags.suppress);
+	else
+		buf = readfile(NULL, flags.suppress);
 	bufhash = hash(buf);
 	size_t size = 0;
 	while (1) {

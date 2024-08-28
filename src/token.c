@@ -1,10 +1,10 @@
-#include "bed.h"
+#include "bettered.h"
 #include "token.h"
 
 static void addtok(struct token **, int *, enum toktype, void *);
+static int getint(char *, int *);
 static char *getpat(char *, int *);
 static char **getpr(char *, int *);
-static int getint(char *, int *);
 
 int len = 0;
 
@@ -44,7 +44,7 @@ struct token *scanner(char *src)
         break;
       case 'm':
         i++;
-        if ((p = getint(src, &i)) > 0) {
+        if ((p = getint(src, &i)) >= 0) {
           void *n = calloc(1, sizeof(int));
           *((int *) n) = p;
           addtok(&tokens, &pos, MOVE, n);
@@ -55,7 +55,7 @@ struct token *scanner(char *src)
         }
       case 't':
         i++;
-        if((p = getint(src, &i)) > 0) {
+        if((p = getint(src, &i)) >= 0) {
           void *n = calloc(1, sizeof(int));
           *((int *) n) = p;
           addtok(&tokens, &pos, TRANSFER, n);
@@ -153,7 +153,12 @@ static int getint(char *src, int *srcpos)
   int start = *srcpos;
   while (src[start] >= '0' && src[start] <= '9')
     start++;
+
   char *tmp = strndup(src + *srcpos, start - *srcpos);
+  if (strlen(tmp) == 0) {
+    free(tmp);
+    return -1;
+  }
   int n = atoi(tmp);
   free(tmp);
   if (src[start] == ',')
