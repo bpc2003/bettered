@@ -184,7 +184,7 @@ int main(int argc, char **argv)
 						lines[j] = lines[j - 1];
 					break;
 				default:
-					printf("%d - %s\n", tokens[i].type, *((char **)tokens[i].literal));
+					printf("%d - %s\n", tokens[i].type, tokens[i].literal);
 					break;
 			}
 			if (tokens[i].literal != NULL)

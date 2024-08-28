@@ -68,7 +68,11 @@ struct token *scanner(char *src)
         addtok(&tokens, &pos, GLOBAL, getpat(src, &i));
         break;
       case 's':
-        addtok(&tokens, &pos, SUBSTITUTE, getpr(src, &i));
+        char **pr = getpr(src, &i);
+        if (pr[0] == NULL || strlen(pr[1]) == 0)
+          addtok(&tokens, &pos, ERROR, NULL);
+        else
+          addtok(&tokens, &pos, SUBSTITUTE, pr);
         return tokens;
       case 'u':
         addtok(&tokens, &pos, UNDO, NULL);
@@ -109,8 +113,11 @@ struct token *scanner(char *src)
           *((int *) n) = getint(src, &i);
           addtok(&tokens, &pos, NUMBER, n);
         }
-        else if (src[i] == '$')
-            addtok(&tokens, &pos, NUMBER, strdup("-1"));
+        else if (src[i] == '$') {
+            void *n = calloc(1, sizeof(int));
+            *((int *)n) = -1;
+            addtok(&tokens, &pos, NUMBER, n);
+        }
         else
           addtok(&tokens, &pos, ERROR, NULL);
         break;
@@ -132,8 +139,10 @@ static char *getpat(char *src, int *srcpos)
   if (src[++*srcpos] != '/')
     return NULL;
   int start = ++*srcpos;
-  for (; src[*srcpos] != '/'; (*srcpos)++) ;
+  for (; src[*srcpos] != '/' && src[*srcpos]; (*srcpos)++) ;
 
+  if (src[*srcpos] == '\0')
+    return NULL;
   char *pat = strndup(src + start, *srcpos - start);
   return pat;
 }

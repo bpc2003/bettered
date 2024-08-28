@@ -44,8 +44,8 @@ void changelines(char **buf, int start, int end)
 	int nl, len;
 	char **tmpbuf = getlines(&nl);
 	get_len(buf, len);
-	if (end == END || end > len)
-		end = len;
+	end = end == END || end > len ? len : end;
+	start = start == END ? len : start;
 
 	int i, j;
 	for (i = start - 1, j = 0; i < end && j < nl; ++i, ++j) {
@@ -68,8 +68,8 @@ void dellines(char **buf, int start, int end)
 	int len;
 	get_len(buf, len);
 
-	if (end == END || end > len)
-		end = len;
+	end = end == END || end > len ? len : end;
+	start = start == END ? len : start;
 	char **tmpbuf = calloc((len - end + 1), sizeof(char *));
 	for (int i = end; buf[i]; ++i)
 		tmpbuf[i - end] = strdup(buf[i]);
