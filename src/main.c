@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 				case SUBSTITUTE:
 					writetmp(tmp, buf);
 					char **pr = (char **) tokens[i].literal;
-					substitute(buf, lines[0], lines[1], *pr, *(pr + 1));
+					substitute(buf, lines[0], lines[1], pr[0], pr[1]);
 					for (int k = 0; k < 2; ++k)
 						free(pr[k]);
 					break;

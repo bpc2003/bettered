@@ -124,9 +124,9 @@ static char *getpat(char *src, int *srcpos)
 static char **getpr(char *src, int *srcpos)
 {
   char **pr = calloc(2, sizeof(char *));
-  *pr = getpat(src, srcpos);
+  pr[0] = getpat(src, srcpos);
   ++*srcpos;
-  *(pr + 1) = strndup(src + *srcpos, strlen(src + *srcpos) - 1);
+  pr[1] = strndup(src + *srcpos, strlen(src + *srcpos) - 1);
 
   return pr;
 }
