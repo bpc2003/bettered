@@ -7,6 +7,7 @@ static char *getpat(char *, int *);
 static char **getpr(char *, int *);
 
 int len = 0;
+char *pat;
 
 struct token *scanner(char *src)
 {
@@ -65,8 +66,23 @@ struct token *scanner(char *src)
           return tokens;
         }
       case 'g':
-        addtok(&tokens, &pos, GLOBAL, getpat(src, &i));
-        break;
+        pat = getpat(src, &i);
+        if (pat == NULL) {
+          addtok(&tokens, &pos, ERROR, NULL);
+          return tokens;
+        } else {
+          addtok(&tokens, &pos, GLOBAL, pat);
+          break;
+        }
+      case 'v':
+        pat = getpat(src, &i);
+        if (pat == NULL) {
+          addtok(&tokens, &pos, ERROR, NULL);
+          return tokens;
+        } else {
+          addtok(&tokens, &pos, INVERT, pat);
+          break;
+        }
       case 's':
         char **pr = getpr(src, &i);
         if (pr[0] == NULL || strlen(pr[1]) == 0)
@@ -115,7 +131,7 @@ struct token *scanner(char *src)
         }
         else if (src[i] == '$') {
             void *n = calloc(1, sizeof(int));
-            *((int *)n) = -1;
+            *((int *) n) = -1;
             addtok(&tokens, &pos, NUMBER, n);
         }
         else

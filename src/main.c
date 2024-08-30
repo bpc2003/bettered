@@ -47,6 +47,7 @@ int main(int argc, char **argv)
 	bufhash = hash(buf);
 	size_t size = 0;
 	while (1) {
+		printf("> ");
 		if (getline(&cmd, &size, stdin) <= 0) {
 			freeall();
 			exit(0);
@@ -137,7 +138,10 @@ int main(int argc, char **argv)
 						free(pr[k]);
 					break;
 				case GLOBAL:
-					flines = find(buf, tokens[i].literal, &llen);
+					flines = find(buf, tokens[i].literal, &llen, 0);
+					break;
+				case INVERT:
+					flines = find(buf, tokens[i].literal, &llen, 1);
 					break;
 				case UNDO:
 					undo(tmp, &buf);

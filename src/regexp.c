@@ -1,6 +1,6 @@
 #include "regexp.h"
 
-int *find(char **buf, char *pat, int *len)
+int *find(char **buf, char *pat, int *len, int inv)
 {
 	int pos = 0;
 	*len = pos;
@@ -14,12 +14,15 @@ int *find(char **buf, char *pat, int *len)
 	}
 
 	for (int i = 0; buf[i]; ++i) {
-		if (regexec(&re, buf[i], 0, NULL, 0) == 0) {
+		int comp = regexec(&re, buf[i], 0, NULL, 0);
+		if (comp == 0 && !inv) {
 			lines = realloc(lines, (++pos) * sizeof(int));
 			lines[pos - 1] = i + 1;
+		} else if (comp == REG_NOMATCH && inv) {
+			lines = realloc(lines, (++pos) * sizeof(int));
+			lines[pos - 1] = i  + 1;
 		}
 	}
-
 	*len = pos;
 	regfree(&re);
 	return lines;
