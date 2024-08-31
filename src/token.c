@@ -24,6 +24,7 @@ struct token *scanner(char *src)
       case ',':
         addtok(&tokens, &pos, COMMA, NULL);
         break;
+      case 'P':
       case 'p':
       case 'n':
         addtok(&tokens, &pos, PRINT, strndup(src + i, 1));

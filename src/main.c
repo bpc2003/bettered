@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 		for (int i = 0, j = 0; i < len; ++i) {
 			if (llen > 0) {
 				for (int k = llen; llen > 0; llen--) {
-					lines[0] = lines[1] = flines[k-llen];
+					lines[0] = lines[1] = flines[k - llen];
 					switch (tokens[i].type) {
 						case PRINT:
 							printlines(buf, !strcmp(tokens[i].literal, "n"),
@@ -66,6 +66,8 @@ int main(int argc, char **argv)
 							if (k - llen == 0)
 								writetmp(tmp, buf);
 							dellines(buf, lines[0], lines[1]);
+							if (k - llen + 1 < k)
+								flines[k - llen + 1]--;
 							break;
 						case TRANSFER:
 							if (k - llen == 0)
@@ -75,7 +77,8 @@ int main(int argc, char **argv)
 						case MOVE:
 							if (k - llen == 0)
 								writetmp(tmp, buf);
-							if (flines[k-llen+1] < *((int *)tokens[i].literal))
+							if (k - llen + 1 < k &&
+									flines[k - llen + 1] < *((int *)tokens[i].literal))
 								flines[k-llen+1]--;
 							movelines(buf, lines[0], lines[1], *((int *)tokens[i].literal), 1);
 							break;
@@ -138,9 +141,13 @@ int main(int argc, char **argv)
 						free(pr[k]);
 					break;
 				case GLOBAL:
+					if (flines != NULL)
+						free(flines);
 					flines = find(buf, tokens[i].literal, &llen, 0);
 					break;
 				case INVERT:
+					if (flines != NULL)
+						free(flines);
 					flines = find(buf, tokens[i].literal, &llen, 1);
 					break;
 				case UNDO:

@@ -99,7 +99,7 @@ void movelines(char **buf, int start, int end, int to, int cut)
 	int len;
 	get_len(buf, len);
 
-	for (int i = len; i >= to; --i)
+	for (int i = len; i > to; --i)
 		buf[(end - start + 1) + i - 1] = buf[i - 1];
 	for (int i = 0; i < (end - start + 1); ++i) {
 		buf[to + i] = strdup(tmpbuf[i]);

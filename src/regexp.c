@@ -3,8 +3,7 @@
 int *find(char **buf, char *pat, int *len, int inv)
 {
 	int pos = 0;
-	*len = pos;
-	int *lines = calloc(1, sizeof(int));
+	int *lines = calloc(2, sizeof(int));
 	regex_t re;
 	if (lines == NULL)
 		return NULL;
@@ -16,11 +15,13 @@ int *find(char **buf, char *pat, int *len, int inv)
 	for (int i = 0; buf[i]; ++i) {
 		int comp = regexec(&re, buf[i], 0, NULL, 0);
 		if (comp == 0 && !inv) {
-			lines = realloc(lines, (++pos) * sizeof(int));
-			lines[pos - 1] = i + 1;
+			if (pos >= 2)
+				lines = realloc(lines, (pos + 1) * sizeof(int));
+			lines[pos++] = i + 1;
 		} else if (comp == REG_NOMATCH && inv) {
-			lines = realloc(lines, (++pos) * sizeof(int));
-			lines[pos - 1] = i  + 1;
+			if (pos >= 2)
+				lines = realloc(lines, (pos + 1) * sizeof(int));
+			lines[pos++] = i  + 1;
 		}
 	}
 	*len = pos;
