@@ -7,6 +7,7 @@
 #include "bufops.h"
 #include "fileops.h"
 #include "hash.h"
+#include "keytab.h"
 #include "regexp.h"
 #include "token.h"
 

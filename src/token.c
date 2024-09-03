@@ -3,11 +3,13 @@
 
 static void addtok(struct token **, int *, enum toktype, void *);
 static int getint(char *, int *);
+static char *getcode(char *, int *);
 static char *getpat(char *, int *);
 static char **getpr(char *, int *);
 
 int len = 0;
 char *pat;
+char *c;
 
 struct token *scanner(char *src)
 {
@@ -91,6 +93,20 @@ struct token *scanner(char *src)
         else
           addtok(&tokens, &pos, SUBSTITUTE, pr);
         return tokens;
+      case 'k':
+        c = getcode(src, &i);
+        if (c == NULL)
+          addtok(&tokens, &pos, ERROR, NULL);
+        else
+          addtok(&tokens, &pos, MARK, c);
+        return tokens;
+      case '\'':
+        c = getcode(src, &i);
+        if (c == NULL)
+          addtok(&tokens, &pos, ERROR, NULL);
+        else
+          addtok(&tokens, &pos, SINGLE_QUOTE, c);
+        return tokens;
       case 'u':
         addtok(&tokens, &pos, UNDO, NULL);
         break;
@@ -162,6 +178,14 @@ static char *getpat(char *src, int *srcpos)
     return NULL;
   char *pat = strndup(src + start, *srcpos - start);
   return pat;
+}
+
+static char *getcode(char *src, int *srcpos)
+{
+  if (!islower(src[++*srcpos]))
+    return NULL;
+  char *c = strndup(src + *srcpos, strlen(src + *srcpos) - 1);
+  return strlen(c) > 1 ? NULL : c;
 }
 
 static char **getpr(char *src, int *srcpos)

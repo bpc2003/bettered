@@ -88,6 +88,8 @@ void dellines(char **buf, int start, int end)
 
 void movelines(char **buf, int start, int end, int to, int cut)
 {
+	if (start == 1 && end == END)
+		return;
 	char **tmpbuf = calloc((end - start + 1), sizeof(char *));
 	for (int i = start - 1; i < end; ++i)
 		tmpbuf[i - (start - 1)] = strdup(buf[i]);

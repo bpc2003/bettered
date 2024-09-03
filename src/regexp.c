@@ -5,23 +5,19 @@ int *find(char **buf, char *pat, int *len, int inv)
 	int pos = 0;
 	int *lines = calloc(2, sizeof(int));
 	regex_t re;
-	if (lines == NULL)
-		return NULL;
-	if (regcomp(&re, pat, 0)) {
+	if (lines == NULL || regcomp(&re, pat, 0)) {
 		fprintf(stderr, "?\n");
+		if (lines)
+			free(lines);
 		return NULL;
 	}
 
 	for (int i = 0; buf[i]; ++i) {
 		int comp = regexec(&re, buf[i], 0, NULL, 0);
-		if (comp == 0 && !inv) {
+		if (comp == 0 && !inv || comp == REG_NOMATCH && inv) {
 			if (pos >= 2)
 				lines = realloc(lines, (pos + 1) * sizeof(int));
 			lines[pos++] = i + 1;
-		} else if (comp == REG_NOMATCH && inv) {
-			if (pos >= 2)
-				lines = realloc(lines, (pos + 1) * sizeof(int));
-			lines[pos++] = i  + 1;
 		}
 	}
 	*len = pos;

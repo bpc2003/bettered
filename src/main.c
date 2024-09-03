@@ -141,20 +141,27 @@ int main(int argc, char **argv)
 						free(pr[k]);
 					break;
 				case GLOBAL:
-					if (flines != NULL)
-						free(flines);
-					flines = find(buf, tokens[i].literal, &llen, 0);
-					break;
 				case INVERT:
 					if (flines != NULL)
 						free(flines);
-					flines = find(buf, tokens[i].literal, &llen, 1);
+					flines = find(buf, tokens[i].literal, &llen,
+									 tokens[i].type == INVERT);
+					break;
+				case MARK:
+					addkey(*((char *)tokens[i].literal), lines);
+					break;
+				case SINGLE_QUOTE:
+					int *t = getkey(*((char *) tokens[i].literal));
+					if (t == NULL)
+						fprintf(stderr, "?\n");
+					else
+						printlines(buf, 0, t[0], t[1]);
 					break;
 				case UNDO:
 					undo(tmp, &buf);
 					break;
 				case PRINT_FILENAME:
-					if (checkname(tokens[i].literal) == 0)
+					if (checkname(tokens[i].literal) == 0) // TODO: Implement helper function for else condition
 						fprintf(stderr, "?\n");
 					else
 						printf("%s\n", filename);
@@ -252,6 +259,9 @@ static void freeall() {
 		free(buf[i]);
 	free(buf);
 	free(flines);
+	for (int i = 0; i < 26; ++i)
+		if (keytab[i].lines != NULL)
+			free(keytab[i].lines);
 	fclose(tmp);
 }
 
