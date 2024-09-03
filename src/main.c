@@ -1,5 +1,14 @@
+#include <stdio.h>
 #include <ctype.h>
-#include "bettered.h"
+#include <stdlib.h>
+#include <string.h>
+
+#include "bufops.h"
+#include "fileops.h"
+#include "hash.h"
+#include "keytab.h"
+#include "regexp.h"
+#include "token.h"
 
 struct {
 	unsigned int suppress : 1;
@@ -19,7 +28,7 @@ FILE *tmp;
 
 unsigned long bufhash;
 
-static void freeall();
+static void freeall(void);
 static int checkname(char *);
 
 int main(int argc, char **argv)
@@ -35,7 +44,7 @@ int main(int argc, char **argv)
 				fprintf(stderr, "%s: usage: [-] [-o] [file]\n", argv[0]);
 				exit(1);
 			}
-			else
+			else if (filename == NULL)
 				filename = strdup(argv[i]);
 		}
 	}
@@ -252,16 +261,14 @@ int main(int argc, char **argv)
 	}
 }
 
-static void freeall() {
+static void freeall(void) {
 	free(cmd);
 	free(filename);
 	for (int i = 0; buf[i]; ++i)
 		free(buf[i]);
 	free(buf);
 	free(flines);
-	for (int i = 0; i < 26; ++i)
-		if (keytab[i].lines != NULL)
-			free(keytab[i].lines);
+	freekeytab();
 	fclose(tmp);
 }
 

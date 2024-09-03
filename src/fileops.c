@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <string.h>
 #include "fileops.h"
 
 char **readfile(char *filename, int suppress)

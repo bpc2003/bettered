@@ -4,7 +4,10 @@
 #include <ctype.h>
 #include <string.h>
 
-struct tab keytab[26];
+static struct {
+  char key;
+  int *lines;
+} keytab[26];
 
 int *getkey(char key)
 {
@@ -28,4 +31,11 @@ void addkey(char key, int lines[2])
   keytab[idx].key = key;
   keytab[idx].lines = calloc(2, sizeof(int));
   memcpy(keytab[idx].lines, lines, 2 * sizeof(int));
+}
+
+void freekeytab(void)
+{
+  for (int i = 0; i < 26; ++i)
+    if (keytab[i].lines != NULL)
+      free(keytab[i].lines);
 }

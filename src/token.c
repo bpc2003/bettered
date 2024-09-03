@@ -1,4 +1,5 @@
-#include "bettered.h"
+#include <stdlib.h>
+#include <string.h>
 #include "token.h"
 
 static void addtok(struct token **, int *, enum toktype, void *);

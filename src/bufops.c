@@ -1,4 +1,7 @@
+#include <stdlib.h>
+#include <string.h>
 #include "bufops.h"
+#include "fileops.h"
 
 static char **getlines(int *);
 

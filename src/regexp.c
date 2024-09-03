@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <regex.h>
 #include "regexp.h"
 
 int *find(char **buf, char *pat, int *len, int inv)
