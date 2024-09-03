@@ -170,12 +170,6 @@ int main(int argc, char **argv)
 				case UNDO:
 					undo(tmp, &buf);
 					break;
-				case PRINT_FILENAME:
-					if (checkname(tokens[i].literal) == 0)
-						fprintf(stderr, "?\n");
-					else
-						printf("%s\n", filename);
-					break;
 				case EDIT_CHECK:
 					if (hash(buf) != bufhash && !flags.warn) {
 						fprintf(stderr, "?\n");
@@ -189,24 +183,10 @@ int main(int argc, char **argv)
 						}
 					}
 					break;
+				case PRINT_FILENAME:
 				case EDIT_NOCHECK:
-					if (checkname(tokens[i].literal) == 0)
-						fprintf(stderr, "?\n");
-					else
-						filecmd(tokens[i].type);
-					break;
 				case READ:
-					if (checkname(tokens[i].literal) == 0)
-						fprintf(stderr, "?\n");
-					else
-						filecmd(tokens[i].type);
-					break;
 				case APPEND_FILE:
-					if(checkname(tokens[i].literal) == 0)
-						fprintf(stderr, "?\n");
-					else
-						filecmd(tokens[i].type);
-					break;
 				case WRITE:
 					if (checkname(tokens[i].literal) == 0)
 						fprintf(stderr, "?\n");
@@ -289,6 +269,9 @@ static void filecmd(enum toktype type)
 		case WRITE:
 			bufhash = hash(buf);
 			writefile(filename, buf, flags.suppress);
+			break;
+		case PRINT_FILENAME:
+			printf("%s\n", filename);
 			break;
 	}
 }
