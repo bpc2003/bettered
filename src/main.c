@@ -30,6 +30,7 @@ unsigned long bufhash;
 
 static void freeall(void);
 static int checkname(char *);
+static void filecmd(enum toktype);
 
 int main(int argc, char **argv)
 {
@@ -170,7 +171,7 @@ int main(int argc, char **argv)
 					undo(tmp, &buf);
 					break;
 				case PRINT_FILENAME:
-					if (checkname(tokens[i].literal) == 0) // TODO: Implement helper function for else condition
+					if (checkname(tokens[i].literal) == 0)
 						fprintf(stderr, "?\n");
 					else
 						printf("%s\n", filename);
@@ -183,11 +184,7 @@ int main(int argc, char **argv)
 						if (checkname(tokens[i].literal) == 0)
 							fprintf(stderr, "?\n");
 						else {
-							for (int i = 0; buf[i]; ++i)
-								free(buf[i]);
-							free(buf);
-							buf = readfile(filename, flags.suppress);
-							bufhash = hash(buf);
+							filecmd(tokens[i].type);
 							flags.warn = 0;
 						}
 					}
@@ -195,37 +192,26 @@ int main(int argc, char **argv)
 				case EDIT_NOCHECK:
 					if (checkname(tokens[i].literal) == 0)
 						fprintf(stderr, "?\n");
-					else {
-						for (int i = 0; buf[i]; ++i)
-							free(buf[i]);
-						free(buf);
-						buf = readfile(filename, flags.suppress);
-						bufhash = hash(buf);
-					}
+					else
+						filecmd(tokens[i].type);
 					break;
 				case READ:
 					if (checkname(tokens[i].literal) == 0)
 						fprintf(stderr, "?\n");
-					else {
-						writetmp(tmp, buf);
-						appendlines(buf, filename, lines[1], flags.suppress);
-					}
+					else
+						filecmd(tokens[i].type);
 					break;
 				case APPEND_FILE:
 					if(checkname(tokens[i].literal) == 0)
 						fprintf(stderr, "?\n");
-					else {
-						bufhash = hash(buf);
-						appendfile(filename, buf, flags.suppress);
-					}
+					else
+						filecmd(tokens[i].type);
 					break;
 				case WRITE:
 					if (checkname(tokens[i].literal) == 0)
 						fprintf(stderr, "?\n");
-					else {
-						bufhash = hash(buf);
-						writefile(filename, buf, flags.suppress);
-					}
+					else
+						filecmd(tokens[i].type);
 					break;
 				case ERROR:
 					fprintf(stderr, "?\n");
@@ -279,4 +265,30 @@ static int checkname(char *s) {
 		filename = strdup(s);
 	}
 	return filename == NULL ? 0 : strlen(filename);
+}
+
+static void filecmd(enum toktype type)
+{
+	switch (type) {
+		case EDIT_CHECK:
+		case EDIT_NOCHECK:
+			for (int i = 0; buf[i]; ++i)
+				free(buf[i]);
+			free(buf);
+			buf = readfile(filename, flags.suppress);
+			bufhash = hash(buf);
+			break;
+		case READ:
+			writetmp(tmp, buf);
+			appendlines(buf, filename, lines[1], flags.suppress);
+			break;
+		case APPEND_FILE:
+			bufhash = hash(buf);
+			appendfile(filename, buf, flags.suppress);
+			break;
+		case WRITE:
+			bufhash = hash(buf);
+			writefile(filename, buf, flags.suppress);
+			break;
+	}
 }

@@ -7,6 +7,8 @@ static char **getlines(int *);
 
 void printlines(char **buf, int ln, int start, int end)
 {
+	if (start == END)
+		get_len(buf, start);
 	for (int i = start - 1; buf[i]; ++i) {
 		if (i == end)
 			break;
