@@ -3,12 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bufops.h"
-#include "fileops.h"
 #include "hash.h"
+#include "token.h"
+#include "bufops.h"
 #include "keytab.h"
 #include "regexp.h"
-#include "token.h"
+#include "fileops.h"
 
 struct {
 	unsigned int suppress : 1;
