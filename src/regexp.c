@@ -46,7 +46,7 @@ void substitute(char **buf, int start, int end, char *pat, char *rep)
 				for (int j = pmatch[0].rm_so, p = 0; j < strlen(buf[i]); ++j) {
 					if (p < strlen(rep))
 						buf[i][j] = rep[p++];
-					else
+					else if (strlen(pat) > 1)
 						buf[i][j] = buf[i][pmatch[0].rm_eo + j - p];
 				}
 			} else {
