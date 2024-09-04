@@ -103,11 +103,13 @@ struct token *scanner(char *src)
         return tokens;
       case '\'':
         c = getcode(src, &i);
-        if (c == NULL)
+        if (c == NULL) {
           addtok(&tokens, &pos, ERROR, NULL);
-        else
+          return tokens;
+        } else {
           addtok(&tokens, &pos, SINGLE_QUOTE, c);
-        return tokens;
+          break;
+        }
       case 'u':
         addtok(&tokens, &pos, UNDO, NULL);
         break;
@@ -185,8 +187,8 @@ static char *getcode(char *src, int *srcpos)
 {
   if (!islower(src[++*srcpos]))
     return NULL;
-  char *c = strndup(src + *srcpos, strlen(src + *srcpos) - 1);
-  return strlen(c) > 1 ? NULL : c;
+  char *c = strndup(src + *srcpos, 1);
+  return c;
 }
 
 static char **getpr(char *src, int *srcpos)

@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 								writetmp(tmp, buf);
 							dellines(buf, lines[0], lines[1]);
 							if (k - llen + 1 < k)
-								flines[k - llen + 1]--;
+								flines[k - llen + 1] -= k - llen + 1;
 							break;
 						case TRANSFER:
 							if (k - llen == 0)
@@ -88,8 +88,8 @@ int main(int argc, char **argv)
 							if (k - llen == 0)
 								writetmp(tmp, buf);
 							if (k - llen + 1 < k &&
-									flines[k - llen + 1] < *((int *)tokens[i].literal))
-								flines[k-llen+1]--;
+									flines[k - llen + 1] <= *((int *)tokens[i].literal))
+								flines[k-llen+1] -= k - llen + 1;
 							movelines(buf, lines[0], lines[1], *((int *)tokens[i].literal), 1);
 							break;
 						default:
@@ -158,14 +158,18 @@ int main(int argc, char **argv)
 									 tokens[i].type == INVERT);
 					break;
 				case MARK:
-					addkey(*((char *)tokens[i].literal), lines);
+					addkey(*((char *) tokens[i].literal), lines);
 					break;
 				case SINGLE_QUOTE:
 					int *t = getkey(*((char *) tokens[i].literal));
 					if (t == NULL)
-						fprintf(stderr, "?\n");
-					else
-						printlines(buf, 0, t[0], t[1]);
+						tokens[i + 1].type = ERROR;
+					else {
+						lines[0] = t[0];
+						lines[1] = t[1];
+						if (tokens[i + 1].type == 0)
+							printlines(buf, 0, lines[0], lines[1]);
+					}
 					break;
 				case UNDO:
 					undo(tmp, &buf);
@@ -183,11 +187,11 @@ int main(int argc, char **argv)
 						}
 					}
 					break;
-				case PRINT_FILENAME:
-				case EDIT_NOCHECK:
 				case READ:
-				case APPEND_FILE:
 				case WRITE:
+				case APPEND_FILE:
+				case EDIT_NOCHECK:
+				case PRINT_FILENAME:
 					if (checkname(tokens[i].literal) == 0)
 						fprintf(stderr, "?\n");
 					else
