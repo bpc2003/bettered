@@ -27,20 +27,14 @@ void insertlines(char **buf, int pos, int ins)
 	if (pos == END || pos > len)
 		pos = len;
 
+	tmpbuf = realloc(tmpbuf, (nl + len) * sizeof(char *));
 	if (ins && len > 0) {
-		for (int i = len; i >= pos; --i)
-			buf[i + nl - 1] = buf[i - 1];
-		for (int i = pos; i < pos + nl; i++)
-			buf[i - 1] = strdup(tmpbuf[i - pos]);
+		memmove(tmpbuf + nl, buf + pos - 1, len * sizeof(char *));
+		memcpy(buf + pos - 1, tmpbuf, (len + nl) * sizeof(char *));
 	} else {
-		for (int i = len; i > pos; --i)
-			buf[i + nl - 1] = buf[i - 1];
-		for (int i = pos; i < pos + nl; i++)
-			buf[i] = strdup(tmpbuf[i - pos]);
+		memmove(tmpbuf + nl, buf + pos, len * sizeof(char *));
+		memcpy(buf + pos, tmpbuf, (len + nl) * sizeof(char *));
 	}
-
-	for (int i = 0; i < nl; ++i)
-		free(tmpbuf[i]);
 	free(tmpbuf);
 }
 
@@ -52,19 +46,11 @@ void changelines(char **buf, int start, int end)
 	end = end == END || end > len ? len : end;
 	start = start == END ? len : start;
 
-	int i, j;
-	for (i = start - 1, j = 0; i < end && j < nl; ++i, ++j) {
+	for (int i = start - 1; i < end; ++i)
 		free(buf[i]);
-		buf[i] = strdup(tmpbuf[j]);
-	}
-	if (j < nl) {
-		for (int tmp = len; tmp > end; --tmp)
-			buf[tmp + (nl - j) - 1] = buf[tmp - 1];
-		for (; j < nl; ++i, ++j)
-			buf[i] = strdup(tmpbuf[j]);
-	}
-	for (i = 0; i < nl; ++i)
-		free(tmpbuf[i]);
+	tmpbuf = realloc(tmpbuf, (nl + len) * sizeof(char *));
+	memmove(tmpbuf + nl, buf + end, len * sizeof(char *));
+	memcpy(buf + start - 1, tmpbuf, (len + nl) * sizeof(char *));
 	free(tmpbuf);
 }
 
@@ -72,22 +58,17 @@ void dellines(char **buf, int start, int end)
 {
 	int len;
 	get_len(buf, len);
-
 	end = end == END || end > len ? len : end;
 	start = start == END ? len : start;
-	char **tmpbuf = calloc((len - end + 1), sizeof(char *));
-	for (int i = end; buf[i]; ++i)
-		tmpbuf[i - end] = strdup(buf[i]);
 
-	for (int i = start - 1, j = 0; i < len; ++i, ++j) {
+	char **tmpbuf = calloc((len - end + 1), sizeof(char *));
+	memmove(tmpbuf, buf + end, (len - end + 1) * sizeof(char *));
+
+	for (int i = start - 1; i < end; ++i) {
 		free(buf[i]);
-		if (j < (len - end)) {
-			buf[i] = strdup(tmpbuf[j]);
-			free(tmpbuf[j]);
-		}
-		else
-			buf[i] = NULL;
+		buf[i] = NULL;
 	}
+	memcpy(buf + start - 1, tmpbuf, (len - end + 1) * sizeof(char *));
 	free(tmpbuf);
 }
 

@@ -8,4 +8,7 @@ In order to install bettered clone this repo and then run:
 
 ## Uninstalling
 In order to uninstall run:  
-`doas/sudo make uninstall`
+`doas/sudo make uninstall` 
+  
+Or run:  
+`doas/sudo make remove`
