@@ -28,13 +28,10 @@ void insertlines(char **buf, int pos, int ins)
 		pos = len;
 
 	tmpbuf = realloc(tmpbuf, (nl + len) * sizeof(char *));
-	if (ins && len > 0) {
-		memmove(tmpbuf + nl, buf + pos - 1, len * sizeof(char *));
-		memcpy(buf + pos - 1, tmpbuf, (len + nl) * sizeof(char *));
-	} else {
-		memmove(tmpbuf + nl, buf + pos, len * sizeof(char *));
-		memcpy(buf + pos, tmpbuf, (len + nl) * sizeof(char *));
-	}
+	if (ins && len > 0)
+		--pos;
+	memmove(tmpbuf + nl, buf + pos, len * sizeof(char *));
+	memcpy(buf + pos, tmpbuf, (len + nl) * sizeof(char *));
 	free(tmpbuf);
 }
 
@@ -44,7 +41,7 @@ void changelines(char **buf, int start, int end)
 	char **tmpbuf = getlines(&nl);
 	get_len(buf, len);
 	end = end == END || end > len ? len : end;
-	start = start == END ? len : start;
+	start = start == END || start > len ? len : start;
 
 	for (int i = start - 1; i < end; ++i)
 		free(buf[i]);
@@ -59,7 +56,7 @@ void dellines(char **buf, int start, int end)
 	int len;
 	get_len(buf, len);
 	end = end == END || end > len ? len : end;
-	start = start == END ? len : start;
+	start = start == END || start > len ? len : start;
 
 	char **tmpbuf = calloc((len - end + 1), sizeof(char *));
 	memmove(tmpbuf, buf + end, (len - end + 1) * sizeof(char *));
