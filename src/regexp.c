@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include <regex.h>
 #include <stdlib.h>
 #include <string.h>
-#include <regex.h>
+#include "bufops.h"
 #include "regexp.h"
 
 int *find(char **buf, char *pat, int *len, int inv)
@@ -39,7 +40,7 @@ void substitute(char **buf, int start, int end, char *pat, char *rep)
 		return;
 	}
 	if (end == END)
-		get_len(buf, end);
+		end = get_len(buf);
 	for (int i = start - 1; i < end; ++i) {
 		if (regexec(&re, buf[i], 1, pmatch, 0) != REG_NOMATCH) {
 			if (strlen(rep) <= strlen(pat)) {
