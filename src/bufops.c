@@ -68,24 +68,22 @@ void dellines(char **buf, int start, int end)
 
 void movelines(char **buf, int start, int end, int to, int cut)
 {
-	if (start == 1 && end == END)
+	if (start == 1 && end == END || start > end) {
+		fprintf(stderr, "?\n");
 		return;
-	char **tmpbuf = calloc((end - start + 1), sizeof(char *));
-	for (int i = start - 1; i < end; ++i)
-		tmpbuf[i - (start - 1)] = strdup(buf[i]);
+	}
 
+	char **tmpbuf = calloc((end - start + 1), sizeof(char *));
+	for (int i = start - 1, j = 0; i < end; ++i, ++j)
+		tmpbuf[j] = strdup(buf[i]);
 	if (cut) {
 		dellines(buf, start, end);
 		to = to > end ? to - (end - start + 1) : to;
 	}
-	int len = get_len(buf);
 
-	for (int i = len; i > to; --i)
-		buf[(end - start + 1) + i - 1] = buf[i - 1];
-	for (int i = 0; i < (end - start + 1); ++i) {
-		buf[to + i] = strdup(tmpbuf[i]);
-		free(tmpbuf[i]);
-	}
+	int len = get_len(buf);
+	memmove(buf + to + (end - start + 1), buf + to, (len - to) * sizeof(char *));
+	memcpy(buf + to, tmpbuf, (end - start + 1) * sizeof(char *));
 	free(tmpbuf);
 }
 
@@ -93,7 +91,7 @@ void joinlines(char **buf, int start, int end)
 {
 	int len = get_len(buf);
 	end = end == END || end > len ? len : end;
-	if (start >= len) {
+	if (start >= end) {
 		fprintf(stderr, "?\n");
 		return;
 	}
